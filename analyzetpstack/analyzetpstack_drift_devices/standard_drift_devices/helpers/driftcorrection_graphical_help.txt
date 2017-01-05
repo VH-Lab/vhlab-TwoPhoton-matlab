@@ -1,0 +1,27 @@
+This is a graphical drift correction tool for the purpose of making manual corrections to automated algorithms.
+
+The user is presented with a reference view of the imaging field on the left, and a frame-by-frame view of the image sequence to be corrected for
+drift on the right. 
+
+The user can turn on ZOOM and PAN modes by clicking on the respective buttons, and can change the minimum and maximum scale of the brightness for the
+images (which correspond to a single channel) in the ColorScale editable text window.
+
+The Play/Rewind tools (buttons and slider) control the frame of the image sequence that is shown at the right.
+
+The drift control buttons move the image up or down so the user can manually correct the drift of the current frame. If the '5x' button is highlighted, 
+then changes are made in 5 pixel increments. Otherwise, changes are made in 1 pixel increments.
+
+The drift correction value for each frame is shown at the right. Selecting a frame brings that frame into view. 
+
+The user can choose 'Fill Down' to apply the drift of the currently selected frame to the remaining frames.
+
+The user can identify two 'key frames' so that the program will interpolate the drift between the two positions. For example, suppose the image is stable up
+up to frame 100, and then drifts evenly until from 200. The user can mark frame 100 as a 'key frame', go down to frame 200 and correct the drift, and then mark 
+frame 200 as a 'key frame'. At this point, the drift from frames 101 to 199 will be interpolated evenly between frames 100 and 200, and the 'key frame' marking
+is cleared.
+
+The user can add his/her own marks to the image by clicking 'Add Marks'. The user will be prompted to click on locations, and the marks appear as a 
+crosshair symbol. The user can also control whether or not any cells that were drawn on the reference image are also shown on both images.
+
+The user can reload any drift correction that was applied previously by clicking the 'Reload' button, and can save the current drift settings to disk
+by clicking the 'Save' button.  'Cancel' closes the window.
