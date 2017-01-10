@@ -2,9 +2,7 @@ function TwoPhotonConfigurationInterview
 
 config_string = {'function TwoPhotonConfiguration' '' 'TwoPhotonGlobals;' '' };
 
-fname = which('vhtools_configuration');
-
-[path,filename] = fileparts(fname);
+path = config_dir;
 
 twophotonconfigname = [path filesep 'TwoPhotonConfiguration.m'];
 
