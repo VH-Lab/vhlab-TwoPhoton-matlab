@@ -30,11 +30,11 @@ end;
 mypwd = which('TwoPhotonUserInit');
 
 if isempty(mypwd),
-	configpath= config_dirname;
+	configpath = config_dirname;
 
 	disp(['No TwoPhotonUserInit file was found in ' configpath '.  We will add one for you; modify it at will.']);
 
-	copyfile([pwd filesep 'TwoPhotonUserInit--example.m'],[configpath filesep 'TwoPhotonUserInit.m']);
+	copyfile([TwoPhotonPath filesep 'TwoPhotonUserInit--example.m'],[configpath filesep 'TwoPhotonUserInit.m']);
 end;
 
 mypwd = which('TwoPhotonUserInit');
@@ -42,7 +42,7 @@ if ~isempty(mypwd),
 	TwoPhotonUserInit;
 end;
 
-addpath(pwd);
+addpath(TwoPhotonPath);
 SetTwoPhotonConfiguration(TwoPhotonPlatform, TwoPhotonSynchronization);
 
 d = dir([TwoPhotonPath filesep 'analyzetpstack' filesep 'analyzetpstack_draw_devices' filesep 'standard_draw_devices']);

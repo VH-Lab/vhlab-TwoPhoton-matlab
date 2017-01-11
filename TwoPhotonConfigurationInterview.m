@@ -2,7 +2,7 @@ function TwoPhotonConfigurationInterview
 
 config_string = {'function TwoPhotonConfiguration' '' 'TwoPhotonGlobals;' '' };
 
-path = config_dir;
+path = config_dirname;
 
 twophotonconfigname = [path filesep 'TwoPhotonConfiguration.m'];
 
