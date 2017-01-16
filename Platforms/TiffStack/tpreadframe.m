@@ -3,6 +3,7 @@ function [im,fname]=tpreadframe(dirname,fnameprefix,cycle,channel,frame)
 %  read frame from multitiff
 %
 % 2008, Alexander Heimel
+% 2017, Steve Van Hooser
 %
 fname=fullfile(dirname,tpfilename(fnameprefix,cycle,channel,frame));
 
