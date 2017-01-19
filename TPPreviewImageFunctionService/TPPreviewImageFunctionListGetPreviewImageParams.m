@@ -30,8 +30,8 @@ goodload = 0;
 if exist(filename)==2,
 	if frame~=0,
 		try,
-			%disp(['trying to load tpfnameparameters and dirnames']);
-			load([dirname filesep 'tppreview_' shortname '_ch' int2str(channel) '.mat'],'params','tpfnameparameters','dirnames','-mat');
+			load([dirname filesep 'tppreview_' shortname '_ch' int2str(channel) '.mat'], 'params',...
+				'tpfnameparameters','dirnames','-mat');
 			if ~exist('tpfnameparameters','var') | ~exist('dirnames','var'), error(['variables we needed were not found.']); end;
 		catch,
 			%disp(['recomputing tpfnameparameters and dirnames']);
