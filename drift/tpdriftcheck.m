@@ -95,7 +95,7 @@ for k=1:length(dirnames)
 	for f=1:howoften:n_timestamps-avgframes,
 		fprintf(['Checking frame ' int2str(f) ' of ' int2str(n_timestamps) '.\n']);
 		t(end+1) = 1;
-		im1 = zeros(params.Main.Lines_per_frame,params.Main.Pixels_per_line);
+		im1 = zeros(params.Main.Lines_per_frame,params.Main.Pixels_per_line,avgframes);
 		for j=0:avgframes-1,
 			im1(:,:,j+1)=tpreadframe(dirname,tpfileparams,ffile(f+j,1),channel,ffile(f+j,2));
 		end;
