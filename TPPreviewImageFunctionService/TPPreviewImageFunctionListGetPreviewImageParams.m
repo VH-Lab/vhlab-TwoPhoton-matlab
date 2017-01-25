@@ -16,6 +16,9 @@ function [pvimg, params,total_frames] = TPPreviewImageFunctionListGetPreviewImag
 %   exists.
 %
 
+
+ % sdv 2017-01-24
+
 if nargin<4,
 	frame = 0;
 end;
@@ -29,14 +32,14 @@ filename = [dirname filesep 'tppreview_' shortname '_ch' int2str(channel) '.mat'
 goodload = 0;
 if exist(filename)==2,
 	if frame~=0,
+		out = TPPreviewImageFunctionListGetCache([filename]);
+		params = out.params;
 		try,
-			load([dirname filesep 'tppreview_' shortname '_ch' int2str(channel) '.mat'], 'params',...
-				'tpfnameparameters','dirnames','-mat');
+			dirnames = out.dirnames;
+			tpfnameparameters = out.tpfnameparameters;
 			if ~exist('tpfnameparameters','var') | ~exist('dirnames','var'), error(['variables we needed were not found.']); end;
 		catch,
 			%disp(['recomputing tpfnameparameters and dirnames']);
-			% doesn't have tpfnameparameters or dirnames, need to fix
-			load([dirname filesep 'tppreview_' shortname '_ch' int2str(channel) '.mat'],'params','-mat');
 
 			dirnames = tpdirnames(dirname);
 			tpparams = {};
@@ -47,11 +50,12 @@ if exist(filename)==2,
 					tpparams{i} = tpreadconfig(dirnames{i});
 					tpfnameparameters{i} = tpfnameparams(dirnames{i},channel,tpparams{i});
 				end;
-        		else,
-		                tpparams = tpreadconfig(dirnames);
+	       		else,
+				tpparams = tpreadconfig(dirnames);
 				tpfnameparameters{1} = tpfnameparams(dirnames,channel,tpparams);
 			end;
-			save([dirname filesep 'tppreview_' shortname '_ch' int2str(channel) '.mat'],'tpfnameparameters','dirnames','-append','-mat');
+			save([filename],'tpfnameparameters','dirnames','-append','-mat');
+			TPPreviewImageListAddCache(filename,pvimg,params,out.parameters,out.dirname,tpfnameparameters,total_frames,dirnames);
 		end;
 		ffile = repmat([0 0],length(params{1}.Image_TimeStamp__us_),1);
 		initind = 1;
@@ -66,8 +70,10 @@ if exist(filename)==2,
 		total_frames = length(params{1}.Image_TimeStamp__us_);
 		return;
 	else,
-		load([dirname filesep 'tppreview_' shortname '_ch' int2str(channel) '.mat'],'pvimg','params',...
-				'parameters','-mat');
+		out = TPPreviewImageFunctionListGetCache([filename]);
+		pvimg = out.pvimg;
+		params= out.params;
+		parameters = out.parameters;
 		total_frames = length(params{1}.Image_TimeStamp__us_);
 
 		gotmatch = 0;
@@ -110,6 +116,7 @@ if ~goodload,	% not present or old parameters so must compute or re-compute
 				parameters = TPPreviewImageFunctionList(i).parameters;
 				save([ dirname filesep 'tppreview_' shortname '_ch' int2str(thechannel(j)) '.mat'], ...
 					'pvimg','params','parameters','dirname','tpfnameparameters','total_frames','dirnames','-mat');
+				TPPreviewImageListAddCache(filename,pvimg,params,parameters,dirname,tpfnameparameters,total_frames,dirnames);
 			end;
 		end;
 	end;

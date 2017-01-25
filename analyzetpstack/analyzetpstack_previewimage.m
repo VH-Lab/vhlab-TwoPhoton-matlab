@@ -147,7 +147,6 @@ switch command,
 			if iscell(previewparams{1}),
 				previewparams{1} = previewparams{1}{1};
 			end;
-
 			if dir_updated,
 				set(ft(fig,'FrameSlider'),'min',0,'max',total_frames,'value',0,'SliderStep',[1 1]/total_frames);
 			end;
