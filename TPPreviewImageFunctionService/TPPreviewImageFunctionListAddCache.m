@@ -23,7 +23,7 @@ end;
 if isempty(TPPreviewImageCache),
 	match = [];
 else,
-	match = strcmp(filename,{TPPreviewImageCache.filename});
+	match = find(strcmp(filename,{TPPreviewImageCache.filename}));
 end;
 
 if ~isempty(match),

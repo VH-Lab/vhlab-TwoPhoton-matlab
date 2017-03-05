@@ -116,7 +116,7 @@ if ~goodload,	% not present or old parameters so must compute or re-compute
 				parameters = TPPreviewImageFunctionList(i).parameters;
 				save([ dirname filesep 'tppreview_' shortname '_ch' int2str(thechannel(j)) '.mat'], ...
 					'pvimg','params','parameters','dirname','tpfnameparameters','total_frames','dirnames','-mat');
-				TPPreviewImageListAddCache(filename,pvimg,params,parameters,dirname,tpfnameparameters,total_frames,dirnames);
+				TPPreviewImageFunctionListAddCache(filename,pvimg,params,parameters,dirname,tpfnameparameters,total_frames,dirnames);
 			end;
 		end;
 	end;

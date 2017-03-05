@@ -148,6 +148,7 @@ switch command,
 				previewparams{1} = previewparams{1}{1};
 			end;
 			if dir_updated,
+                if isempty(total_frames), warning(['total_frames is empty.']); end;
 				set(ft(fig,'FrameSlider'),'min',0,'max',total_frames,'value',0,'SliderStep',[1 1]/total_frames);
 			end;
 
@@ -364,7 +365,8 @@ switch command,
 			varargout{1} = [];
 			varargout{2} = [];
 			varargout{3} = [];
-			errordlg(['Error loading image data on channel ' int2str(channel) '; usually data does not exist although there may be a problem with the preview compute function.']);
+			errorstack = lasterror;
+			errordlg(['Error loading image data on channel ' int2str(channel) '; usually data does not exist although there may be a problem with the preview compute function.  Error message was ' errorstack.message ' : ' errorstack.identifier]);
 		end;
 	case 'PlayBt',
 		%disp(['Play button']);
