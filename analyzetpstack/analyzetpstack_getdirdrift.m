@@ -34,7 +34,7 @@ else,
 		d=load([tpdirs{1} filesep 'driftcorrect'],'-mat');
 		dr_all_raw = d.drift;
 		try,
-			dr_initial = mean(d.drift(1:numpreviewframes,:)); % just get the initial drift
+			dr_initial = mean(d.drift(1:numpreviewframes,:),1); % just get the initial drift
 		catch,
 			dr_initial = d.drift(1,:);
 		end;
