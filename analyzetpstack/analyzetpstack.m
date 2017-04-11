@@ -25,7 +25,7 @@ function analyzetpstack(command, thestackname, thefig)
 %         'd-draw circ until; p-toggle present'
 %   c. rearranged window - large imaging area. Window still not resizable.
 
-NUMPREVIEWFRAMES = 30;
+NUMPREVIEWFRAMES = 1;  % this no longer has meaning for the number of preview frames, which are all handled by external functions now; it needs to be set to 1 so drift is drawn correctly
 TwoPhotonGlobals;
 
 if nargin==2, % command is actually experiment directoryar name
