@@ -38,6 +38,7 @@ uiHighlightBackgroundColor = 0.7 * [1 1 1];
 markerlist = [];
 celllist = [];
 driftinfo = [];
+refdriftinfo = [];
 frameImage = [];
 keyframes = [];
 
@@ -46,7 +47,7 @@ windowlabel = 'Graphical Drift Correction';
 
 varlist = {'inputs','windowheight','windowwidth','windowrowheight','windowlabel','uiBackgroundColor', ...
 		'uiHighlightBackgroundColor',...
-		'celllist','markerlist','driftinfo','keyframes','frameImage'};
+		'celllist','markerlist','driftinfo','keyframes','frameImage','refdriftinfo'};
 
 assign(varargin{:});
 
@@ -184,8 +185,6 @@ switch command,
 		if length(ud.keyframes)==2,
 			keyframes = sort(ud.keyframes);
 			frameinsert = keyframes(1)+1:keyframes(2)-1;
-			keyframes,
-			ud.driftinfo(keyframes,1)'
 			xnew = round(interp1(keyframes,ud.driftinfo(keyframes,1),frameinsert,'linear'));
 			ynew = round(interp1(keyframes,ud.driftinfo(keyframes,2),frameinsert,'linear'));
 			ud.driftinfo(frameinsert,[1 2]) = [xnew(:) ynew(:)];
@@ -216,10 +215,13 @@ switch command,
 		end;
 		set(ft(fig,'DriftList'),'string',str,'max',1,'value',1,'fontname','Courier');
 
-	case 'UpdateReferenceImage',
+	case 'UpdateReferenceImage',  % writes user data
 		refmnmx = driftcorrection_graphical('command','GetSettings','fig',fig);
+                analyzetpstackud = get(ud.inputs.analyzetpstack_handle,'userdata');
 		refImage = TPPreviewImageFunctionListGetPreviewImageParams(...
                                 ud.inputs.fullrefdirname,ud.inputs.view,ud.inputs.channel,0);
+                [ref_dr_initial, ref_dr_all_raw, ref_dr_all_offset] = analyzetpstack_getdirdrift(analyzetpstackud,ud.inputs.refdirname);
+		ud.refdriftinfo = ref_dr_initial;
 		refImage = rescale(double(refImage),refmnmx,[0 255]);
 		refAx = findobj(fig,'type','axes','tag','refImageAxes');
 		currentaxes = gca;
@@ -227,13 +229,17 @@ switch command,
 		oldimage = findobj(refAx,'type','Image');
 		if ~isempty(oldimage), delete(oldimage); end;
 		refImageHandle = image(refImage);
-		set(refImageHandle,'xdata',get(refImageHandle,'xdata')+ud.inputs.refxyoffset(1),'ydata',get(refImageHandle,'ydata')+ud.inputs.refxyoffset(2));
+                % varargout{3} is shiftx: -xyoffset(x) + ((drift(current_Frame) - drift(initialframe)))
+                % varargout{4} is shifty: -xyoffset(y) + ((drift(current_Frame) - drift(initialframe)))
+
+		set(refImageHandle,'xdata',get(refImageHandle,'xdata')-ud.inputs.refxyoffset(1),'ydata',get(refImageHandle,'ydata')-ud.inputs.refxyoffset(2));
 		movetoback(refImageHandle);
 		drawnow;
 		colormap(gray(256));
 		set(refAx,'tag','refImageAxes');
 		set(refAx,'box','off','YTick',[],'XTick',[])
 		axes(currentaxes); % return current axes to their previous value
+		set(fig,'userdata',ud);
 
 	case 'ShowCellsCB',
 		axeslist = {'refImageAxes', 'frameImageAxes' };
@@ -248,9 +254,9 @@ switch command,
 		if get(ft(fig,'ShowCellsCB'),'value'), % markers on
 			currAxes = gca;
 			for j=1:length(axeslist),
-				xyoffsets = ud.inputs.refxyoffset;
-				if j==2,
-					xyoffsets = ud.inputs.xyoffset;
+				xyoffsets = ud.inputs.xyoffset;
+				if j==1, 
+					xyoffsets = ud.inputs.refxyoffset + ud.refdriftinfo;
 				end;
 				h = [];
 				a = ft(fig,axeslist{j});
@@ -297,7 +303,7 @@ switch command,
 	case 'UpdateFrameImage',
 		[refmnmx,mnmx,channel,view,frame] = driftcorrection_graphical('command','GetSettings','fig',fig);
 		[frameImage,params,total_frames] = TPPreviewImageFunctionListGetPreviewImageParams(...
-                                ud.inputs.fullpathdirname,ud.inputs.view,ud.inputs.channel,frame);
+	                                ud.inputs.fullpathdirname,ud.inputs.view,ud.inputs.channel,frame);
 		if get(ft(fig,'FrameSlider'),'max')~=total_frames,
 			set(ft(fig,'FrameSlider'),'max',total_frames,'SliderStep',[1 1]/total_frames);
 		end;
@@ -310,8 +316,9 @@ switch command,
 		if ~isempty(oldimage), delete(oldimage); end;
 		frameImageHandle = image(frameImage);
 			% need to add drift info here
-		set(frameImageHandle,'xdata',get(frameImageHandle,'xdata')+(-ud.inputs.xyoffset(1)+ud.driftinfo(frame,1)),...
-				'ydata',get(frameImageHandle,'ydata')+(-ud.inputs.xyoffset(2))+ud.driftinfo(frame,2));
+		shiftx = -ud.inputs.xyoffset(1)+(ud.driftinfo(frame,1));
+		shifty = -ud.inputs.xyoffset(2)+(ud.driftinfo(frame,2));
+		set(frameImageHandle,'xdata',get(frameImageHandle,'xdata')+shiftx, 'ydata',get(frameImageHandle,'ydata')+shifty);
 		movetoback(frameImageHandle);
 		drawnow;
 		colormap(gray(256));

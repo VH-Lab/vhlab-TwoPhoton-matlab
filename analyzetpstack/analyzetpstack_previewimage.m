@@ -166,6 +166,7 @@ switch command,
 
 			% now draw it
 			ud.previewim = image(previewimage);
+			%[shiftx shifty]
 			set(ud.previewim,'xdata',get(ud.previewim,'xdata')+shiftx,'ydata',get(ud.previewim,'ydata')+shifty);
 			if isfield(previewparams{1},'Type')
 				if strcmp(previewparams{1}.Type,'Linescan'),
@@ -344,6 +345,8 @@ switch command,
 		xyoffset = analyzetpstack_getxyoffset(ud,dirname);
 		varargout{1} = previewimage;
 		varargout{2} = previewparams;
+		%disp('image shift parameters: -xoffset, drift present, initial drift ');
+		%[-xyoffset(1) drift(max(frame,1),1) initial_drift(1)],
 		varargout{3} = -xyoffset(1)+(drift(max(frame,1),1)-initial_drift(1));
 		varargout{4} = -xyoffset(2)+(drift(max(frame,1),2)-initial_drift(2));
 		varargout{5} = total_frames;

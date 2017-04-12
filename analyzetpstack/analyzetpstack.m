@@ -280,7 +280,9 @@ switch command,
             % might need to draw cells
             % we do when we are drawing for first time
             % or if we are adding a cell
-            drift = analyzetpstack_getdirdrift(ud,newdir,NUMPREVIEWFRAMES);
+            drift = analyzetpstack_getdirdrift(ud,newdir);
+            xyoffset = analyzetpstack_getxyoffset(ud,newdir);
+            total_drift = drift + xyoffset;
             if 1+length(ud.celldrawinfo.h)<=length(ud.celllist),
                 start = 1+length(ud.celllist)-(-length(ud.celldrawinfo.h)+length(ud.celllist));
             elseif length(ud.celldrawinfo.h)==0,
@@ -298,10 +300,12 @@ switch command,
             for i=start:length(ud.celllist),
                 axes(ft(fig,'tpaxes'));
                 hold on;
-                xi = ud.celllist(i).xi; xi(end+1) = xi(1);
-                yi = ud.celllist(i).yi; yi(end+1) = yi(1);
-                ud.celldrawinfo.h(end+1) = plot(xi-drift(1),yi-drift(2),'linewidth',2);
-                ud.celldrawinfo.t(end+1) = text(mean(xi)-drift(1),mean(yi)-drift(2),...
+                xi = ud.celllist(i).xi;
+		xi(end+1) = xi(1);
+                yi = ud.celllist(i).yi;
+		yi(end+1) = yi(1);
+                ud.celldrawinfo.h(end+1) = plot(xi-total_drift(1),yi-total_drift(2),'linewidth',2);
+                ud.celldrawinfo.t(end+1) = text(mean(xi)-total_drift(1),mean(yi)-total_drift(2),...
                     int2str(ud.celllist(i).index),...
                     'fontsize',12,'fontweight','bold','horizontalalignment','center');
                 set(gca,'tag','tpaxes');
@@ -419,11 +423,13 @@ switch command,
         previewimhandle = analyzetpstack_previewimage('GetPreviewImageHandle',[],fig);
         sz = size(get(previewimhandle,'CData'));
         [blankprev_x,blankprev_y] = meshgrid(1:sz(2),1:sz(1));
-        drift = analyzetpstack_getdirdrift(ud, currdir, NUMPREVIEWFRAMES);
+        drift = analyzetpstack_getdirdrift(ud, currdir);
+	xyoffset = analyzetpstack_getxyoffset(ud, currdir);
+	totaldrift = drift + xyoffset;
         if cellisactualcell,
             cr = ud.celllist(v);
-            cr.xi = ud.celllist(v).xi - mean(ud.celllist(v).xi) + x + drift(1) ;
-            cr.yi = ud.celllist(v).yi - mean(ud.celllist(v).yi) + y + drift(2);
+            cr.xi = ud.celllist(v).xi - mean(ud.celllist(v).xi) + x + totaldrift(1) ;
+            cr.yi = ud.celllist(v).yi - mean(ud.celllist(v).yi) + y + totaldrift(2);
             bw = inpolygon(blankprev_x,blankprev_y,cr.xi,cr.yi);
             cr.pixelinds = find(bw);
             ud.celllist(v) = cr;
@@ -434,20 +440,20 @@ switch command,
                 image(im0);
             end;
         else, %
-            changes = getChanges(ud,v,currdir,ancestors);
-            changes.xi = ud.celllist(v).xi+drift(1)-mean(ud.celllist(v).xi)+x;
-            changes.yi = ud.celllist(v).yi+drift(2)-mean(ud.celllist(v).yi)+y;
-            bw = inpolygon(blankprev_x,blankprev_y,changes.xi,changes.yi);
-            changes.pixelinds = find(bw);
-            changes.dirname = currdir;
-            if 0,
-                im0 = zeros(size(get(previewimhandle,'CData')));
-                figure;
-                im0(bw) = 255;
-                image(im0);
-            end;
-            setChanges(ud,fig,v,changes);
-            ud = get(fig,'userdata');
+		changes = getChanges(ud,v,currdir,ancestors);
+		changes.xi = ud.celllist(v).xi+totaldrift(1)-mean(ud.celllist(v).xi)+x;
+		changes.yi = ud.celllist(v).yi+totaldrift(2)-mean(ud.celllist(v).yi)+y;
+		bw = inpolygon(blankprev_x,blankprev_y,changes.xi,changes.yi);
+		changes.pixelinds = find(bw);
+		changes.dirname = currdir;
+		if 0,
+			im0 = zeros(size(get(previewimhandle,'CData')));
+			figure;
+			im0(bw) = 255;
+			image(im0);
+		end;
+		setChanges(ud,fig,v,changes);
+		ud = get(fig,'userdata');
         end;
         ud.celldrawinfo.dirname = '';
         set(fig,'userdata',ud);
@@ -467,36 +473,39 @@ switch command,
         zoom off;
         [bw,xi,yi]=roipoly();
         % now what happens is different
-        drift = analyzetpstack_getdirdrift(ud, currdir, NUMPREVIEWFRAMES);
+        drift = analyzetpstack_getdirdrift(ud, currdir);
+	xyoffset = analyzetpstack_getxyoffset(ud, currdir);
+	total_drift = drift + xyoffset;
         previewimhandle = analyzetpstack_preview('GetCurrentPreviewImageHandle',[],fig);
         if cellisactualcell,
-            cr = ud.celllist(v);
-            cr.xi = xi+drift(1); cr.yi = yi+drift(2);
-            cr.pixelinds = find(bw);
-            ud.celllist(v) = cr;
-            if 0,
-                im0 = zeros(size(get(previewimhandle,'CData')));
-                figure;
-                im0(bw) = 255;
-                image(im0);
-            end;
+		cr = ud.celllist(v);
+		cr.xi = xi+total_drift(1);
+		cr.yi = yi+total_drift(2);
+		cr.pixelinds = find(bw);
+		ud.celllist(v) = cr;
+		if 0,
+			im0 = zeros(size(get(previewimhandle,'CData')));
+			figure;
+			im0(bw) = 255;
+			image(im0);
+		end;
         else, %
-            sz = size(get(previewimhandle,'CData'));
-            [blankprev_x,blankprev_y] = meshgrid(1:sz(2),1:sz(1));
-            changes = getChanges(ud,v,currdir,ancestors);
-            changes.xi = xi+drift(1);
-            changes.yi = yi+drift(2);
-            bw = inpolygon(blankprev_x,blankprev_y,changes.xi,changes.yi);
-            changes.pixelinds = find(bw);
-            changes.dirname = currdir;
-            if 0,
-                im0 = zeros(size(get(previewimhandle,'CData')));
-                figure;
-                im0(bw) = 255;
-                image(im0);
-            end;
-            setChanges(ud,fig,v,changes);
-            ud = get(fig,'userdata');
+		sz = size(get(previewimhandle,'CData'));
+		[blankprev_x,blankprev_y] = meshgrid(1:sz(2),1:sz(1));
+		changes = getChanges(ud,v,currdir,ancestors);
+		changes.xi = xi+total_drift(1);
+		changes.yi = yi+total_drift(2);
+		bw = inpolygon(blankprev_x,blankprev_y,changes.xi,changes.yi);
+		changes.pixelinds = find(bw);
+		changes.dirname = currdir;
+		if 0,
+			im0 = zeros(size(get(previewimhandle,'CData')));
+			figure;
+			im0(bw) = 255;
+			image(im0);
+		end;
+		setChanges(ud,fig,v,changes);
+		ud = get(fig,'userdata');
         end;
         ud.celldrawinfo.dirname = '';
         set(fig,'userdata',ud);
@@ -528,7 +537,10 @@ switch command,
 	else,
 		inputs.cell_index_counter = max([ud.celllist.index]);
 	end;
-        inputs.drift = analyzetpstack_getdirdrift(ud,dirname, NUMPREVIEWFRAMES);
+        drift = analyzetpstack_getdirdrift(ud,dirname);
+	xyoffset = analyzetpstack_getxyoffset(ud,dirname);
+	total_drift = drift + xyoffset;
+	inputs.drift = total_drift;
 	inputs.previewim= analyzetpstack_previewimage('GetPreviewImage',[],fig);
 	celllist = analyzetpstack_draw_devs_menu('handleclick',ft(fig,'autoDrawCellsPopup'),inputs);
 	if ~isempty(celllist),
@@ -564,7 +576,9 @@ switch command,
     case 'drawnewBt',
         v = get(ft(fig,'sliceList'),'value');
         dirname = trimws(ud.slicelist(v).dirname);
-        dr = analyzetpstack_getdirdrift(ud,dirname, NUMPREVIEWFRAMES);
+        dr = analyzetpstack_getdirdrift(ud,dirname);
+	xyoffset = analyzetpstack_getxyoffset(ud,dirname);
+	total_drift = dr + xyoffset;
         figure(fig);
         axes(ft(fig,'tpaxes'));
         zoom off;
@@ -572,14 +586,16 @@ switch command,
         newcell=analyzetpstack_emptycellrec;
         newcell.dirname = dirname;
         newcell.pixelinds = find(bw);
-        newcell.xi = xi+dr(1); newcell.yi = yi+dr(2);
+        newcell.xi = xi+total_drift(1);
+	newcell.yi = yi+total_drift(2);
         typestr = get(ft(fig,'cellTypePopup'),'string');
         newcell.type = typestr{get(ft(fig,'cellTypePopup'),'value')};
         labelstr = get(ft(fig,'labelList'),'string');
         newcell.labels= labelstr(get(ft(fig,'labelList'),'value'));
         if ~isempty(ud.celllist),
-            newcell.index = max([ud.celllist.index])+1;
-        else, newcell.index = 1;
+		newcell.index = max([ud.celllist.index])+1;
+        else,
+		newcell.index = 1;
         end;
         ud.celllist = [ud.celllist newcell];
         set(fig,'userdata',ud);
@@ -587,7 +603,9 @@ switch command,
     case 'drawnewballBt',
         v = get(ft(fig,'sliceList'),'value');
         dirname = trimws(ud.slicelist(v).dirname);
-        dr = analyzetpstack_getdirdrift(ud,dirname, NUMPREVIEWFRAMES);
+        dr = analyzetpstack_getdirdrift(ud,dirname);
+	xyoffset = analyzetpstack_getxyoffset(ud,dirname);
+	total_drift = dr + xyoffset;
         figure(fig);
         axes(ft(fig,'tpaxes'));
         zoom off;
@@ -606,8 +624,10 @@ switch command,
         yi_m = - sqrt(rad^2-xi_.^2);
         [x,y] = ginput(1);
         while ~isempty(x),
-            xi = [xi_ xi_(end:-1:1)]+x+dr(1);
-            yi = [yi_p yi_m(end:-1:1)]+y+dr(2);
+            xi = [xi_ xi_(end:-1:1)]+x+total_drift(1);
+            yi = [yi_p yi_m(end:-1:1)]+y+total_drift(2);
+		%[x y]
+		%[x+total_drift(1) y+total_drift(2)]
             bw = inpolygon(blankprev_x,blankprev_y,xi,yi);
             %figure; image(bw*255); colormap(gray(256)); figure(fig);
             %hold on; plot(xi,yi,'r','linewidth',2);
@@ -814,8 +834,20 @@ switch command,
         [thelist,thelistinds1,thelistinds2] = intersect(listofcellnames1,listofcellnames2);
 	pvimg1 = analyzetpstack_previewimage('GetPreviewImageData',[],fig,struct('channel',channel,'dirname',dirname1));
 	pvimg2 = analyzetpstack_previewimage('GetPreviewImageData',[],fig,struct('channel',channel,'dirname',dirname2));
-        try, drift1 = analyzetpstack_getdirdrift(ud,dirname1,NUMPREVIEWFRAMES); catch, drift1 = [0 0]; end;
-        try, drift2 = analyzetpstack_getdirdrift(ud,dirname1,NUMPREVIEWFRAMES); catch, drift1 = [0 0]; end;
+        try,
+		drift1 = analyzetpstack_getdirdrift(ud,dirname1);
+		xyoffset1 = analyzetpstack_getxyoffset(ud,dirname1);
+		drift1 = drift1 + xyoffset1;
+	catch,
+		drift1 = [0 0];
+	end;
+        try,
+		drift2 = analyzetpstack_getdirdrift(ud,dirname1);
+		xyoffset2 = analyzetpstack_getxyoffset(ud,dirname2);
+		drift2 = drift2 + xyoffset2;
+	catch,
+		drift2 = [0 0];
+	end;
         plottpcellalignment(listofcellnames1(thelistinds1),listofcellnames2(thelistinds2),changes1(thelistinds1),changes2(thelistinds2),...
             pvimg1,pvimg2,dirname1,dirname2,drift1,drift2,3);
     case 'movieBt',
@@ -844,9 +876,11 @@ switch command,
             errordlg(['Can''t open analysis file.  Please analyze data first.']);
             error(['Can''t open analysis file.  Please analyze data first.']);
         end;
-        try, thresh = str2num(get(ft(fig,'mapthreshEdit'),'string'));
-        catch, errordlg(['Syntax error in map threshold: ' get(ft(fig,'mapthreshEdit'),'string') '.']);
-            error(['Syntax error in map threshold: ' get(ft(fig,'mapthreshEdit'),'string') '.']);
+        try,
+		thresh = str2num(get(ft(fig,'mapthreshEdit'),'string'));
+        catch,
+		errordlg(['Syntax error in map threshold: ' get(ft(fig,'mapthreshEdit'),'string') '.']);
+		error(['Syntax error in map threshold: ' get(ft(fig,'mapthreshEdit'),'string') '.']);
         end;
         im=tpquickmap(fulldirname,channel,g.resps,g.listofcells,1,'threshold',thresh);
     case 'QuickPSTHBt',
@@ -1163,39 +1197,23 @@ end;
 ancestors{end+1} = dirname;
 % parent should be first, followed by other ancestors, then self
 
-function dr = getcurrentdirdrift(ud,dirname, numpreviewframes)  % depricated, not used right now, should be removed later, leaving in place in case of disaster
-tpdirs = tpdirnames([getpathname(ud.ds) dirname]);
-if isempty(tpdirs),
-    warning(['No driftcorrect file for ' dirname '; shift information will change after drift correction.']);
-    dr = [0 0];
-else,
-    if exist([tpdirs{1} filesep 'driftcorrect'])~=2,
-        warning(['No driftcorrect file for ' dirname '; shift information will change after drift correction.']);
-        dr = [0 0];
-    else,
-        load([tpdirs{1} filesep 'driftcorrect'],'-mat');
-        try,
-            dr = mean(drift(1:numpreviewframes,:)); % just get the initial drift
-        catch, dr = drift(1,:);
-        end;
-    end;
-    
-end;
-% now add XY offset to drift
-dr = dr + analyzetpstack_getxyoffset(ud,dirname);
-
 function [slicestructupdate] = updatecelldraw(ud,i,slicestruct,currdir,numpreviewframes)
 % make a lookup table for slicelist, drift, and ancestors, if it doesn't
 % already exist
 if isempty(slicestruct),
-    slicestruct.slicelistlookup.test = [];
-    slicestruct.slicedriftlookup.test = [];
-    slicestruct.sliceancestorlookup.test = [];
-    for j=1:length(ud.slicelist),
-        slicestruct.slicelistlookup=setfield(slicestruct.slicelistlookup,trimws(ud.slicelist(j).dirname),j);
-        slicestruct.slicedriftlookup=setfield(slicestruct.slicedriftlookup,trimws(ud.slicelist(j).dirname),analyzetpstack_getdirdrift(ud,trimws(ud.slicelist(j).dirname),numpreviewframes));
-        slicestruct.sliceancestorlookup=setfield(slicestruct.sliceancestorlookup,trimws(ud.slicelist(j).dirname),getallparents(ud,trimws(ud.slicelist(j).dirname)));
-    end;
+	slicestruct.slicelistlookup.test = [];
+	slicestruct.slicedriftlookup.test = [];
+	slicestruct.slicexyoffsetlookup.test = [];
+	slicestruct.sliceancestorlookup.test = [];
+	for j=1:length(ud.slicelist),
+		cleandirname = trimws(ud.slicelist(j).dirname); % remove any leading spaces if indented
+		slicestruct.slicelistlookup=setfield(slicestruct.slicelistlookup,cleandirname,j);
+		slicestruct.slicedriftlookup=setfield(slicestruct.slicedriftlookup,cleandirname,...
+			analyzetpstack_getdirdrift(ud,cleandirname));
+		slicestruct.slicexyoffsetlookup = setfield(slicestruct.slicexyoffsetlookup, cleandirname, ...
+			analyzetpstack_getxyoffset(ud,cleandirname));
+		slicestruct.sliceancestorlookup=setfield(slicestruct.sliceancestorlookup,cleandirname, getallparents(ud,cleandirname));
+	end;
 end;
 slicestructupdate = slicestruct;
 
@@ -1215,22 +1233,30 @@ else % hide it
 end;
 % now draw cell with appropriate position and color
 if cellisinthisimage,
-    drift = getfield(slicestructupdate.slicedriftlookup,currdir);
-    changes = getChanges(ud,i,currdir,ancestors);
-    if changes.present, mycolor = [0 0 1];
-    else mycolor = [ 1 0.5 0.5];
-    end;
+	drift = getfield(slicestructupdate.slicedriftlookup, currdir);
+	xyoffset = getfield(slicestructupdate.slicexyoffsetlookup, currdir);
+	total_drift = drift + xyoffset;
+	changes = getChanges(ud,i,currdir,ancestors);
+	if changes.present,
+		mycolor = [0 0 1];
+	else,
+		mycolor = [ 1 0.5 0.5];
+	end;
 else
-    drift = getfield(slicestructupdate.slicedriftlookup, ud.celllist(i).dirname);
-    changes = getChanges(ud,i,ud.celllist(i).dirname,[]);
-    mycolor = [1 0 0];
+	drift = getfield(slicestructupdate.slicedriftlookup, ud.celllist(i).dirname);
+	xyoffset = getfield(slicestructupdate.slicexyoffsetlookup, ud.celllist(i).dirname);
+	total_drift = drift + xyoffset;
+	changes = getChanges(ud,i,ud.celllist(i).dirname,[]);
+	mycolor = [1 0 0];
 end;
 set(ud.celldrawinfo.h(i),'color',mycolor);
 set(ud.celldrawinfo.t(i),'color',mycolor);
-xi = changes.xi; xi(end+1) = xi(1);
-yi = changes.yi; yi(end+1) = yi(1);
-set(ud.celldrawinfo.h(i),'xdata',xi-drift(1),'ydata',yi-drift(2));
-set(ud.celldrawinfo.t(i),'position',[mean(xi)-drift(1) mean(yi)-drift(2) 0]);
+xi = changes.xi;
+xi(end+1) = xi(1);
+yi = changes.yi;
+yi(end+1) = yi(1);
+set(ud.celldrawinfo.h(i),'xdata',xi-total_drift(1),'ydata',yi-total_drift(2));
+set(ud.celldrawinfo.t(i),'position',[mean(xi)-total_drift(1) mean(yi)-total_drift(2) 0]);
 
 function zoomtogcb(obj,evo)
 if get(obj,'Value')==1

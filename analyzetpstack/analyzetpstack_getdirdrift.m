@@ -8,13 +8,14 @@ function [dr_initial, dr_all_raw, dr_all_offset] = analyzetpstack_getdirdrift(ud
 %  number of frames to assume in the preview image (NUMPREVIEWFRAMES, 
 %  1 if not given), this function returns:
 %
-%  DR_INITIAL = [driftx drifty], the x-y drift of the 'preview' image of the
+%  DR_INITIAL = [driftx drifty], the x-y drift of the first frame of the
 %     directory, and
 %  DR_ALL_RAW = [driftx(:) drifty(:)], the raw x-y drift of each individual frame
 %     and 
-%  DR_ALL_CORRECTED = [driftx(:) drifty(:)], the x-y drift of each individual frame plus 
+%  DR_ALL_OFFSET = [driftx(:) drifty(:)], the x-y drift of each individual frame plus 
 %     any XY offset that is provided for DIRNAME in the ANALYZETPSTACK window.
 %   
+%  See also: ANALYZETPSTACK_GETXYOFFSET
 
 if nargin<3,
 	numpreviewframes = 1;
@@ -43,6 +44,5 @@ end;
 
 % now add XY offset to drift
 xyoffset = analyzetpstack_getxyoffset(ud,dirname);
-dr_initial = dr_initial + xyoffset;
 dr_all_offset = dr_all_raw + repmat(xyoffset, size(dr_all_raw,1), 1);
 
