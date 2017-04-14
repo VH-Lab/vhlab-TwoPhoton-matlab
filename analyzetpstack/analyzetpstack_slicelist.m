@@ -61,8 +61,9 @@ switch command,
 		end;
 	case 'sliceList', % user clicks in the slice list
 		analyzetpstack_slicelist('UpdateSliceDisplay',[],fig);
-	case 'AddSliceBt',
+	case 'AddSliceBt', % writes userdata
 		ud.ds = dirstruct(getpathname(ud.ds));
+		set(fig,'userdata',ud);
 		dirlist = getalltests(ud.ds);
 		if isempty(dirlist), errordlg(['No directories in ' getpathname(ud.ds) ' to add....']); return; end;
 		[s,ok] = listdlg('ListString',dirlist);
@@ -77,6 +78,7 @@ switch command,
 			newslice = analyzetpstack_emptyslicerec;
 			newslice.dirname = dirlist{s};
 			%in the future , the preview image stuff should be moved elsewhere
+			if 0,
 			numFrames = NUMPREVIEWFRAMES;
 			channel = 1;
 			sc = getscratchdirectory(ud.ds,1);
@@ -96,6 +98,7 @@ switch command,
 			end;
 			ud.previewimage = cat(1,ud.previewimage,{pvimg});
 			ud.previewparams = cat(1,ud.previewparams,{params});
+			end;
 			ud.slicelist = [ud.slicelist newslice];
 		end;
 		set(fig,'userdata',ud);
@@ -107,7 +110,9 @@ switch command,
 		if isempty(v)|~iscell(dirname), errordlg(['No selected slice to remove']); return; end;
 		dirname = trimws(dirname{v}),
 		ud.slicelist = [ud.slicelist(1:(v-1)) ud.slicelist((v+1):end)];
-		ud.previewimage = [ud.previewimage(1:(v-1));ud.previewimage((v+1):end)];
+		% this is depricated, there is no use of ud.previewimage anymore, now in analyzetpstack_previewimage and
+		%  more sophisticated treatment
+		%ud.previewimage = [ud.previewimage(1:(v-1));ud.previewimage((v+1):end)];
 		cellinds = []; celldel = [];
 		for i=1:length(ud.celllist),
 			if ~strcmp(ud.celllist(i).dirname,dirname),
@@ -156,25 +161,6 @@ switch command,
 		if ~isempty(c), v = ia(1); else, v = 1; end;
 		% now to reshuffle the slicelists
 		ud.slicelist = ud.slicelist(inds);
-		if 0,
-		ud.previewimage = ud.previewimage(inds);
-		ud.previewparams = ud.previewparams(inds);
-		if length(ud.previewimage2)<length(inds),
-			for i=max([1 length(ud.previewimage2)]):length(inds), ud.previewimage2{i} = []; ud.previewparams2{i}=[]; end;
-		end;
-		if length(ud.previewimage3)<length(inds),
-			for i=max([1 length(ud.previewimage3)]):length(inds), ud.previewimage3{i} = []; ud.previewparams3{i}=[]; end;
-		end;
-		if length(ud.previewimage4)<length(inds),
-			for i=max([1 length(ud.previewimage4)]):length(inds), ud.previewimage4{i} = []; ud.previewparams4{i}=[]; end;
-		end;
-		ud.previewimage2 = ud.previewimage2(inds);
-		ud.previewimage3 = ud.previewimage3(inds);
-		ud.previewimage4 = ud.previewimage4(inds);
-		ud.previewparams2 = ud.previewparams2(inds);
-		ud.previewparams3 = ud.previewparams3(inds);
-		ud.previewparams4 = ud.previewparams4(inds);
-		end;
 		set(fig,'userdata',ud);
 		set(findobj(fig,'Tag','sliceList'),'string',newlist,'value',v);
 		if length(ud.slicelist)~=0,
