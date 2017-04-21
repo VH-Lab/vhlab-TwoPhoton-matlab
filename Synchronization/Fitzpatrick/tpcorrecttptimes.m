@@ -32,7 +32,6 @@ function [newtimes,frame2dirnum] = fitzcorrecttp(params, dirname)
 frame2dirnum = [];
 havefile = 1;
 
-params{1},
 try,
 	spike2times = load([dirname filesep 'twophotontimes.txt'],'-ascii');
 	%tptime0 = spike2times(1);

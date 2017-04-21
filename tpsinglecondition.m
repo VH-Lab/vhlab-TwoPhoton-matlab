@@ -24,10 +24,10 @@ function [result,indimages] = tpsinglecondition(dirname, channel, thetrials, tim
 %   onset.
 %
 %  INDIMAGES are individual single condition images in a cell list.
-%  They are the same size as the images in DIRNAME, less 20 pixels
+%  They are the same size as the images in DIRNAME, less 35*2 pixels
 %  on a side that are trimmed.  These pixels are trimmed so that
 %  the entire frame can be read even after drift correction.
-%  Images that drift by more than 10 pixels will not be included in
+%  Images that drift by more than 35 pixels will not be included in
 %  the images.
 %
 %  RESULT is a cell list of composites of INDIMAGES, each one
@@ -79,9 +79,9 @@ for i=1:length(do_analyze_i),
 end;
 
 im = tppreview(dirname,2,1,channel);
-im_outline = zeros(size(im)); im_outline(10:end-10,10:end-10) = 1;
+im_outline = zeros(size(im)); im_outline(35:end-35,35:end-35) = 1;
 pixinds = {find(im_outline==1)};
-im_outline = 0*im_outline(10:end-10,10:end-10);
+im_outline = 0*im_outline(35:end-35,35:end-35);
  % now sort into individual stims
 
 for i=1:numStims(s.stimscript),

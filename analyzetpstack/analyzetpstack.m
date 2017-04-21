@@ -202,8 +202,11 @@ switch command,
         h=findobj(gcf);
         xshift=660;
         for i=1:length(h)
-            if h(i)~=findobj(gcf,'type','figure') & ~strcmp(get(h(i),'type'),'axes')
-                set(h(i),'position',get(h(i),'position')+[xshift 0 0 0]);
+            if h(i)~=findobj(gcf,'type','figure') & ~strcmp(get(h(i),'type'),'axes') 
+                try,
+                    set(h(i),'position',get(h(i),'position')+[xshift 0 0 0]);
+                catch,
+                end;
             end
         end
         uicontrol(button,'position',[883 436 110 20],'String','Delete cell','Tag','deletecellBt');

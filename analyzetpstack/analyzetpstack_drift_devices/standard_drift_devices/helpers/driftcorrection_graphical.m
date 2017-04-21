@@ -24,9 +24,6 @@ function varargout = driftcorrection_graphical(varargin)
 
 
 
- % to do:  pan, zoom, join axes
-
-
 command = 'Main'; 
 fig = '';
 success = 0;
@@ -313,12 +310,19 @@ switch command,
 		axes(frameImageAx);
 		hold on;
 		oldimage = findobj(frameImageAx,'type','Image');
-		if ~isempty(oldimage), delete(oldimage); end;
-		frameImageHandle = image(frameImage);
+		if ~isempty(oldimage),
+			frameImageHandle = oldimage;
+		else,
+			frameImageHandle = image(frameImage);
+		end;
 			% need to add drift info here
 		shiftx = -ud.inputs.xyoffset(1)+(ud.driftinfo(frame,1));
 		shifty = -ud.inputs.xyoffset(2)+(ud.driftinfo(frame,2));
-		set(frameImageHandle,'xdata',get(frameImageHandle,'xdata')+shiftx, 'ydata',get(frameImageHandle,'ydata')+shifty);
+		xdata = get(frameImageHandle,'xdata');
+		xdata = [1 xdata(2)-xdata(1) + 1];
+		ydata = get(frameImageHandle,'ydata');
+		ydata = [1 ydata(2) - ydata(1) + 1]; 
+		set(frameImageHandle,'CData',frameImage,'xdata',xdata+shiftx, 'ydata',ydata+shifty);
 		movetoback(frameImageHandle);
 		drawnow;
 		colormap(gray(256));
