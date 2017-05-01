@@ -62,8 +62,10 @@ end %updates figure display to
 % reflect last command run. Within try segment to prevent error on first
 % window creation where this box doesn't exist yet
 if ~strcmp(command,'NewWindow')
-    set(ft(fig,'zoomtog'),'value',0)
-    set(ft(fig,'pantog'),'value',0)
+	try,
+	    set(ft(fig,'zoomtog'),'value',0)
+	    set(ft(fig,'pantog'),'value',0)
+	end;
 end
 
 switch command,
@@ -271,6 +273,14 @@ switch command,
     case 'ColorMinEdit',
 	error(['Should not happen anymore; should be handled by analyzetpstack_previewimage.m']);
         analyzetpstack('ColorMaxEdit',[],fig);
+    case 'SelectClickedCell',
+	index = get(gcbo,'userdata'),
+	theindex = find([ud.celllist.index]==index);
+	v = get(ft(fig,'celllist'),'value');
+	if v~=theindex,
+		set(ft(fig,'celllist'),'value',index);
+	end;
+        analyzetpstack('celllist',[],fig);
     case 'UpdateCellImage',
         cv = get(ft(fig,'celllist'),'value');
         sv = get(ft(fig,'sliceList'),'value');
@@ -307,9 +317,10 @@ switch command,
 		xi(end+1) = xi(1);
                 yi = ud.celllist(i).yi;
 		yi(end+1) = yi(1);
-                ud.celldrawinfo.h(end+1) = plot(xi-total_drift(1),yi-total_drift(2),'linewidth',2);
+                ud.celldrawinfo.h(end+1) = plot(xi-total_drift(1),yi-total_drift(2),'linewidth',2,...
+			'userdata',ud.celllist(i).index,'Tag','SelectClickedCell','ButtonDownFcn','genercallback');
                 ud.celldrawinfo.t(end+1) = text(mean(xi)-total_drift(1),mean(yi)-total_drift(2),...
-                    int2str(ud.celllist(i).index),...
+                    int2str(ud.celllist(i).index),'userdata',ud.celllist(i).index, 'Tag','SelectClickedCell', 'ButtonDownFcn', 'genercallback', ...
                     'fontsize',12,'fontweight','bold','horizontalalignment','center');
                 set(gca,'tag','tpaxes');
                 if getfield(ud.slicelist(getfield(slicelistlookup,ud.celllist(i).dirname)),'drawcells'),
