@@ -9,6 +9,9 @@ function b=addtotpdatabase(ds,nameref,listofcells,listofcellnames,varargin)
 %
 
 datestr = getpathname(ds);
+if datestr(end)==filesep, datestr = datestr(1:end-1); end;
+[parentdir,currentdir]=fileparts(datestr);
+datestr = currentdir;
 sp = find(datestr=='-');
 if length(sp)~=2, error(['Can''t extract date string...too many dashes.']); end;
 
