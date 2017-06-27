@@ -81,7 +81,7 @@ params.Main.Total_cycles = length(datafile);
 params.Main.Scanline_period__us_ = 1;
 params.Main.Dwell_time__us_ = params.Main.Scanline_period__us_ / theimfinfo(1).Width;
 params.Main.Lines_per_frame = theimfinfo(1).Height;
-params.Main.Pixels_per_line = theimfinfo(2).Width;
+params.Main.Pixels_per_line = theimfinfo(1).Width;
 params.Main.Frame_period__us_ = 1e6 * (1/(tiffstackparams.FrameRate));
 
 framecount = 0;
