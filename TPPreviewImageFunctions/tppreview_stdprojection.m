@@ -65,11 +65,27 @@ if numberFrames > size(ffile,1),
 	numberFrames = size(ffile,1);
 end;
 
-im = [];
+
+im_mean = [];
 for i=1:numberFrames,
 	imnew = tpreadframe(dirnames{1},fnameparameters{1},ffile(n(i),1),channel,ffile(n(i),2));
-	im = cat(3,im,imnew);
+	if isempty(im_mean),
+		im_mean = double(imnew)*1/numberFrames;
+	else,
+		im_mean = im_mean+double(imnew)*1/numberFrames;
+	end;
 end;
 
-if size(im,3)>1, im = std(double(im),[],3); else, im = double(im); end;
-im = reshape(im,params{1}.Main.Lines_per_frame,params{1}.Main.Pixels_per_line);
+im_std = [];
+for i=1:numberFrames,
+	imnew = tpreadframe(dirnames{1},fnameparameters{1},ffile(n(i),1),channel,ffile(n(i),2));
+	if isempty(im_std),
+		im_std = (double(imnew)-im_mean).^2;
+	else,
+		im_std = im_std + (double(imnew)-im_mean).^2;
+	end;
+end;
+
+im_std = sqrt((im_std)./(numberFrames-1));
+
+im = im_std;
