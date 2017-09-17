@@ -287,7 +287,7 @@ switch command,
         newdir = get(ft(fig,'sliceList'),'string');
         newdir = trimws(newdir{sv});
         parentdir=analyzetpstack_getrefdirname(ud,newdir);  % is there a parent directory?
-        ancestors=getallparents(ud,newdir);  % is there a parent directory?
+        ancestors=analyzetpstack_getallparents(ud,newdir);  % is there a parent directory?
         %bg color is red, fg is blue, highlighted is yellow
         if length(ud.celldrawinfo.h)~=length(ud.celllist),
             % might need to draw cells
@@ -341,7 +341,7 @@ switch command,
             disp(['Redrawing for new directory.']);
             % user selected a new directory and we have to recolor
             for i=1:length(ud.celllist),
-                slicestruct = updatecelldraw(ud,i,slicestruct,newdir,NUMPREVIEWFRAMES);
+                slicestruct = analyzetpstack_updatecelldraw.m(ud,i,slicestruct,newdir,NUMPREVIEWFRAMES);
             end;
             ud.celldrawinfo.dirname = newdir;
         end; % redrawing for new directory
@@ -349,12 +349,12 @@ switch command,
         [handles,hinds] = intersect(ud.celldrawinfo.h,highlighted);
         for i=1:length(hinds),
             if hinds(i) ~= cv, % if it shouldn't be highlighted
-                slicestruct = updatecelldraw(ud,hinds(i),slicestruct,newdir,NUMPREVIEWFRAMES);
+                slicestruct = analyzetpstack_updatecelldraw.m(ud,hinds(i),slicestruct,newdir,NUMPREVIEWFRAMES);
             end;
         end;
         % now highlight appropriate cell
         if ~isempty(ud.celldrawinfo.h),
-            slicestruct = updatecelldraw(ud,cv,slicestruct,newdir,NUMPREVIEWFRAMES);
+            slicestruct = analyzetpstack_updatecelldraw.m(ud,cv,slicestruct,newdir,NUMPREVIEWFRAMES);
             set(ud.celldrawinfo.h(cv),'color',[1 1 0],'visible','on');
             set(ud.celldrawinfo.t(cv),'color',[1 1 0],'visible','on');
         end;
@@ -376,8 +376,8 @@ switch command,
         if isempty(parentdir)|strcmp(parentdir,newdir)|AA,
             set(ft(fig,'presentCB'),'enable','off','value',1);
         else,
-            ancestors=getallparents(ud,newdir);
-            changes = getChanges(ud,v,newdir,ancestors);
+            ancestors=analyzetpstack_getallparents(ud,newdir);
+            changes = analyzetpstack_getChanges(ud,v,newdir,ancestors);
             value = changes.present;
             set(ft(fig,'presentCB'),'enable','on','value',value);
         end;
@@ -402,12 +402,12 @@ switch command,
         v = get(ft(fig,'celllist'),'value');
         sv = get(ft(fig,'sliceList'),'value'); currdir = get(ft(fig,'sliceList'),'string'); currdir = trimws(currdir{sv});
         parentdir=analyzetpstack_getrefdirname(ud,currdir);  % is there a parent directory?
-        ancestors=getallparents(ud,currdir);  % is there a parent directory?
+        ancestors=analyzetpstack_getallparents(ud,currdir);  % is there a parent directory?
         if ~isempty(parentdir)&~strcmp(parentdir,currdir)&~strcmp(currdir,ud.celllist(v).dirname), % can't make changes if this is a parent directory
-            changes = getChanges(ud,v,currdir,ancestors);
+            changes = analyzetpstack_getChanges(ud,v,currdir,ancestors);
             changes.present = get(ft(fig,'presentCB'),'value');
             changes.dirname = currdir;
-            setChanges(ud,fig,v,changes);
+            analyzetpstack_setChanges(ud,fig,v,changes);
             ud=get(fig,'userdata');
         end;
         ud.celldrawinfo.dirname = '';
@@ -425,7 +425,7 @@ switch command,
     case 'moveCellBt',
         v = get(ft(fig,'celllist'),'value');
         sv = get(ft(fig,'sliceList'),'value'); currdir = get(ft(fig,'sliceList'),'string'); currdir = trimws(currdir{sv});
-        ancestors=getallparents(ud,currdir);
+        ancestors=analyzetpstack_getallparents(ud,currdir);
         cellisinthisimage = ~isempty(intersect(ud.celllist(v).dirname,ancestors));
         cellisactualcell = strcmp(ud.celllist(v).dirname,currdir);
         if ~cellisinthisimage,
@@ -454,7 +454,7 @@ switch command,
                 image(im0);
             end;
         else, %
-		changes = getChanges(ud,v,currdir,ancestors);
+		changes = analyzetpstack_getChanges(ud,v,currdir,ancestors);
 		changes.xi = ud.celllist(v).xi+totaldrift(1)-mean(ud.celllist(v).xi)+x;
 		changes.yi = ud.celllist(v).yi+totaldrift(2)-mean(ud.celllist(v).yi)+y;
 		bw = inpolygon(blankprev_x,blankprev_y,changes.xi,changes.yi);
@@ -466,7 +466,7 @@ switch command,
 			im0(bw) = 255;
 			image(im0);
 		end;
-		setChanges(ud,fig,v,changes);
+		analyzetpstack_setChanges(ud,fig,v,changes);
 		ud = get(fig,'userdata');
         end;
         ud.celldrawinfo.dirname = '';
@@ -475,7 +475,7 @@ switch command,
     case 'redrawCellBt',
         v = get(ft(fig,'celllist'),'value');
         sv = get(ft(fig,'sliceList'),'value'); currdir = get(ft(fig,'sliceList'),'string'); currdir = trimws(currdir{sv});
-        ancestors=getallparents(ud,currdir);
+        ancestors=analyzetpstack_getallparents(ud,currdir);
         cellisinthisimage = ~isempty(intersect(ud.celllist(v).dirname,ancestors));
         cellisactualcell = strcmp(ud.celllist(v).dirname,currdir);
         if ~cellisinthisimage,
@@ -506,7 +506,7 @@ switch command,
         else, %
 		sz = size(get(previewimhandle,'CData'));
 		[blankprev_x,blankprev_y] = meshgrid(1:sz(2),1:sz(1));
-		changes = getChanges(ud,v,currdir,ancestors);
+		changes = analyzetpstack_getChanges(ud,v,currdir,ancestors);
 		changes.xi = xi+total_drift(1);
 		changes.yi = yi+total_drift(2);
 		bw = inpolygon(blankprev_x,blankprev_y,changes.xi,changes.yi);
@@ -518,7 +518,7 @@ switch command,
 			im0(bw) = 255;
 			image(im0);
 		end;
-		setChanges(ud,fig,v,changes);
+		analyzetpstack_setChanges(ud,fig,v,changes);
 		ud = get(fig,'userdata');
         end;
         ud.celldrawinfo.dirname = '';
@@ -713,8 +713,8 @@ switch command,
         if ~isempty(sptimeintstr), sptimeint= eval(sptimeintstr); else, sptimeint= []; end;
         blankIDstr = get(ft(fig,'BlankIDEdit'),'string');
         if ~isempty(blankIDstr), blankID = eval(blankIDstr); else, blankID = []; end;
-        ancestors = getallparents(ud,dirname);
-        [listofcells,listofcellnames,cellstructs]=getcurrentcellschanges(ud,refdirname,dirname,ancestors);
+        ancestors = analyzetpstack_getallparents(ud,dirname);
+        [listofcells,listofcellnames,cellstructs]=analyzetpstack_analyzetpstack_getcurrentcellschanges(ud,refdirname,dirname,ancestors);
         fname = stackname; scratchname = fixpath(getscratchdirectory(ud.ds,1));
         needtorun = 1;
         channel=fix(str2num(get(ft(fig,'stimChannelEdit'),'string')));
@@ -810,8 +810,8 @@ switch command,
         val = get(ft(fig,'celllist'),'value');
         channel=fix(str2num(get(ft(fig,'stimChannelEdit'),'string')));
         if strcmp(ud.celllist(val).dirname,refdirname)|strcmp(ud.celllist(val).dirname,dirname),
-            ancestors = getallparents(ud,dirname);
-            changes = getChanges(ud,val,dirname,ancestors);
+            ancestors = analyzetpstack_getallparents(ud,dirname);
+            changes = analyzetpstack_getChanges(ud,val,dirname,ancestors);
             changes.dirname,
             if ~changes.present, errordlg(['Cell is not ''present'' in this recording.']); return;  end;
             centerloc = [mean(changes.xi)  mean(changes.yi)];
@@ -837,14 +837,14 @@ switch command,
 		dirname2 = trimws(currstr_{sliceind2});
         end;
         channel=fix(str2num(get(ft(fig,'stimChannelEdit'),'string')));
-        ancestors2 = getallparents(ud,dirname2);
-        ancestors1 = getallparents(ud,dirname1);
+        ancestors2 = analyzetpstack_getallparents(ud,dirname2);
+        ancestors1 = analyzetpstack_getallparents(ud,dirname1);
         if isempty(intersect(dirname1,ancestors2)),
 		error(['Error checking alignment: ' dirname1 ' and ' dirname2 ' are not recordings at the same place.']);
 	end;
         refdirname = analyzetpstack_getrefdirname(ud,dirname1); % should be same for both
-        [listofcells1,listofcellnames1,mycellstructs,changes1]=getcurrentcellschanges(ud,refdirname,dirname1,ancestors1);
-        [listofcells2,listofcellnames2,mycellstructs,changes2]=getcurrentcellschanges(ud,refdirname,dirname2,ancestors2);
+        [listofcells1,listofcellnames1,mycellstructs,changes1]=analyzetpstack_analyzetpstack_getcurrentcellschanges(ud,refdirname,dirname1,ancestors1);
+        [listofcells2,listofcellnames2,mycellstructs,changes2]=analyzetpstack_analyzetpstack_getcurrentcellschanges(ud,refdirname,dirname2,ancestors2);
         [thelist,thelistinds1,thelistinds2] = intersect(listofcellnames1,listofcellnames2);
 	pvimg1 = analyzetpstack_previewimage('GetPreviewImageData',[],fig,struct('channel',channel,'dirname',dirname1));
 	pvimg2 = analyzetpstack_previewimage('GetPreviewImageData',[],fig,struct('channel',channel,'dirname',dirname2));
@@ -901,8 +901,8 @@ switch command,
         dirname = get(ft(fig,'stimdirnameEdit'),'string');
         refdirname = analyzetpstack_getrefdirname(ud,dirname);
         fulldirname = [fixpath(getpathname(ud.ds)) dirname];
-        ancestors = getallparents(ud,dirname);
-        [listofcells,listofcellnames]=getcurrentcellschanges(ud,refdirname,dirname,ancestors);
+        ancestors = analyzetpstack_getallparents(ud,dirname);
+        [listofcells,listofcellnames]=analyzetpstack_analyzetpstack_getcurrentcellschanges(ud,refdirname,dirname,ancestors);
         fname = stackname; scratchname = fixpath(getscratchdirectory(ud.ds,1));
         needtorun = 1;
         channel=fix(str2num(get(ft(fig,'stimChannelEdit'),'string')));
@@ -1013,7 +1013,7 @@ switch command,
         ud.ds = dirstruct(getpathname(ud.ds));
         sv = get(ft(fig,'sliceList'),'value');
         dirname = trimws(ud.slicelist(sv).dirname);
-        [listofcells,listofcellnames,cellstructs]=getcurrentcells(ud,dirname);
+        [listofcells,listofcellnames,cellstructs]=analyzetpstack_getcurrentcells(ud,dirname);
         refs = getnamerefs(ud.ds,dirname);
         foundIt=0;
         for i=1:length(refs), if strcmp(refs(i).name,'tp'), foundIt = i; break; end; end;
@@ -1112,165 +1112,6 @@ end;
 
 function obj = ft(fig, name)
 obj = findobj(fig,'Tag',name);
-
-function [listofcells,listofcellnames,cellstructs] = getcurrentcells(ud,refdirname)
-listofcells = {}; listofcellnames = {};
-cellstructs = analyzetpstack_emptycellrec; cellstructs = cellstructs([]);
-for i=1:length(ud.celllist),
-    if strcmp(ud.celllist(i).dirname,refdirname),
-        listofcells{end+1} = ud.celllist(i).pixelinds;
-        listofcellnames{end+1}=['cell ' int2str(ud.celllist(i).index) ' ref ' ud.celllist(i).dirname];
-        cellstructs = [cellstructs ud.celllist(i)];
-    end;
-end;
-
-function [listofcells,listofcellnames,cellstructs,thechanges] = getcurrentcellschanges(ud,refdirname,currdirname,ancestors)
-listofcells = {}; listofcellnames = {}; thechanges = {};
-cellstructs = analyzetpstack_emptycellrec; cellstructs = cellstructs([]);
-for i=1:length(ud.celllist),
-    if ~isempty(intersect(ud.celllist(i).dirname,ancestors)),
-        changes = getChanges(ud,i,currdirname,ancestors);
-        if changes.present,  % if the cell exists in this recording, go ahead and add it to the list
-            listofcells{end+1} = changes.pixelinds;
-            listofcellnames{end+1}=['cell ' int2str(ud.celllist(i).index) ' ref ' ud.celllist(i).dirname];
-            cellstructs = [cellstructs ud.celllist(i)];
-            thechanges{end+1} = changes;
-        end;
-    end;
-end;
-
-% these functions deal with setting the 'changes' field in the celllist
-function [changes,gotChanges] = getChanges(ud,i,newdir,ancestors)  % cell id is i
-gotChanges = 0;
-if isfield(ud.celldrawinfo,'changes'),
-    if length(ud.celldrawinfo.changes)>=i,
-        changes = ud.celldrawinfo.changes{i};
-        if ~isempty(changes),
-            changedirs = {changes.dirname};
-            [ch,ia,ib]=intersect(ancestors,changedirs);
-            if ~isempty(ch),
-                changes = changes(ib(end)); gotChanges = 1;
-            end;
-        end;
-    end;
-end;
-% if no changes have been specified, return the default
-if ~gotChanges,
-    if ~isempty(i)&~isempty(ud.celllist),
-        changes = struct('present',1,'dirname',newdir,'xi',ud.celllist(i).xi,'yi',ud.celllist(i).yi,...
-            'pixelinds',ud.celllist(i).pixelinds);
-    else,
-        changes = struct('present',1,'dirname',newdir,'xi',[],'yi',[],'pixelinds',[]);
-    end;
-end;
-
-function setChanges(ud,fig,i,newchanges)
-if ~isfield(ud.celldrawinfo,'changes'), ud.celldrawinfo.changes = {}; end;
-gotChanges = 0;
-if length(ud.celldrawinfo.changes)<i, ud.celldrawinfo.changes{i} = []; end;
-changes = ud.celldrawinfo.changes{i};
-currChanges = {};
-for j=1:length(changes),   % if there are already changes, we have to overwrite them
-    if strcmp(changes(j).dirname,newchanges.dirname),
-        gotChanges = j; break;
-    else, currChanges{end+1} = changes(j).dirname;
-    end;
-end;
-currChanges,
-if gotChanges == 0,
-    if length(changes)==0,
-        ud.celldrawinfo.changes{i} = newchanges;
-    else,
-        ud.celldrawinfo.changes{i}(end+1) = newchanges;
-        currChanges{end+1} = newchanges.dirname;
-        [dummy,inds]=sort(currChanges);
-        ud.celldrawinfo.changes{i} = ud.celldrawinfo.changes{i}(inds);
-    end;
-else,
-    ud.celldrawinfo.changes{i}(gotChanges) = newchanges;
-end;
-ud.celldrawinfo.changes{i},
-set(fig,'userdata',ud);
-
-function ancestors = getallparents(ud,dirname)
-namerefs = getnamerefs(ud.ds,dirname);
-ancestors = {};
-for i=1:length(ud.slicelist),
-    if ~strcmp(ud.slicelist(i).dirname,dirname),
-        nr = getnamerefs(ud.ds,ud.slicelist(i).dirname);
-        mtch = 1;
-        for j=1:length(nr),
-            for k=1:length(namerefs),
-                mtch=mtch*double((strcmp(nr(j).name,namerefs(k).name)&(nr(j).ref==namerefs(k).ref)));
-            end;
-        end;
-        if mtch==1, ancestors{end+1} = ud.slicelist(i).dirname; end;
-    else, break;
-    end;
-end;
-ancestors{end+1} = dirname;
-% parent should be first, followed by other ancestors, then self
-
-function [slicestructupdate] = updatecelldraw(ud,i,slicestruct,currdir,numpreviewframes)
-% make a lookup table for slicelist, drift, and ancestors, if it doesn't
-% already exist
-if isempty(slicestruct),
-	slicestruct.slicelistlookup.test = [];
-	slicestruct.slicedriftlookup.test = [];
-	slicestruct.slicexyoffsetlookup.test = [];
-	slicestruct.sliceancestorlookup.test = [];
-	for j=1:length(ud.slicelist),
-		cleandirname = trimws(ud.slicelist(j).dirname); % remove any leading spaces if indented
-		slicestruct.slicelistlookup=setfield(slicestruct.slicelistlookup,cleandirname,j);
-		slicestruct.slicedriftlookup=setfield(slicestruct.slicedriftlookup,cleandirname,...
-			analyzetpstack_getdirdrift(ud,cleandirname));
-		slicestruct.slicexyoffsetlookup = setfield(slicestruct.slicexyoffsetlookup, cleandirname, ...
-			analyzetpstack_getxyoffset(ud,cleandirname));
-		slicestruct.sliceancestorlookup=setfield(slicestruct.sliceancestorlookup,cleandirname, getallparents(ud,cleandirname));
-	end;
-end;
-slicestructupdate = slicestruct;
-
-% must draw cell if it exists in current image or if
-%   its parent 'drawcells' field is checked.
-ancestors = getfield(slicestructupdate.sliceancestorlookup,currdir);
-cellisinthisimage = ~isempty(intersect(ud.celllist(i).dirname,ancestors));
-drawcellsinthisimage = getfield(ud.slicelist(getfield(slicestructupdate.slicelistlookup,currdir)),'drawcells');
-thiscellsparentdrawcells = getfield(ud.slicelist(getfield(slicestructupdate.slicelistlookup,ud.celllist(i).dirname)),'drawcells');
-if (cellisinthisimage && drawcellsinthisimage) || (~cellisinthisimage && thiscellsparentdrawcells),
-    % show cell
-    set(ud.celldrawinfo.h(i),'visible','on');
-    set(ud.celldrawinfo.t(i),'visible','on');
-else % hide it
-    set(ud.celldrawinfo.h(i),'visible','off');
-    set(ud.celldrawinfo.t(i),'visible','off');
-end;
-% now draw cell with appropriate position and color
-if cellisinthisimage,
-	drift = getfield(slicestructupdate.slicedriftlookup, currdir);
-	xyoffset = getfield(slicestructupdate.slicexyoffsetlookup, currdir);
-	total_drift = drift + xyoffset;
-	changes = getChanges(ud,i,currdir,ancestors);
-	if changes.present,
-		mycolor = [0 0 1];
-	else,
-		mycolor = [ 1 0.5 0.5];
-	end;
-else
-	drift = getfield(slicestructupdate.slicedriftlookup, ud.celllist(i).dirname);
-	xyoffset = getfield(slicestructupdate.slicexyoffsetlookup, ud.celllist(i).dirname);
-	total_drift = drift + xyoffset;
-	changes = getChanges(ud,i,ud.celllist(i).dirname,[]);
-	mycolor = [1 0 0];
-end;
-set(ud.celldrawinfo.h(i),'color',mycolor);
-set(ud.celldrawinfo.t(i),'color',mycolor);
-xi = changes.xi;
-xi(end+1) = xi(1);
-yi = changes.yi;
-yi(end+1) = yi(1);
-set(ud.celldrawinfo.h(i),'xdata',xi-total_drift(1),'ydata',yi-total_drift(2));
-set(ud.celldrawinfo.t(i),'position',[mean(xi)-total_drift(1) mean(yi)-total_drift(2) 0]);
 
 function zoomtogcb(obj,evo)
 if get(obj,'Value')==1
