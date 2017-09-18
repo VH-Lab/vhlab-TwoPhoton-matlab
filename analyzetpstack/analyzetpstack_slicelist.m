@@ -127,6 +127,52 @@ switch command,
 		set(fig,'userdata',ud);
 		analyzetpstack_slicelist('UpdateSliceDisplay',[],fig);
 		analyzetpstack('UpdateCellList',[],fig);
+
+	case 'checkAlignmentBt',
+		sliceind1 = get(findobj(fig,'Tag','sliceList'),'value');
+		currstr_ = get(findobj(fig,'Tag','sliceList'),'string');
+		if iscell(currstr_)&~isempty(currstr_),
+			dirname1 = trimws(currstr_{sliceind1});  % currently selected
+		else,
+			disp(['No directories in list to examine.']);
+			return;
+		end;
+		[sliceind2,okay]=listdlg('ListString',currstr_,'PromptString','Select dir to compare','SelectionMode','single');
+		if isempty(sliceind2),
+			return;
+		else,
+			dirname2 = trimws(currstr_{sliceind2});
+		end;
+		channel=fix(str2num(get(findobj(fig,'Tag','stimChannelEdit'),'string')));
+		ancestors2 = getallparents(ud,dirname2);
+		ancestors1 = getallparents(ud,dirname1);
+		if isempty(intersect(dirname1,ancestors2)),
+			error(['Error checking alignment: ' dirname1 ' and ' dirname2 ' are not recordings at the same place.']);
+		end;
+		refdirname = analyzetpstack_getrefdirname(ud,dirname1); % should be same for both
+		[listofcells1,listofcellnames1,mycellstructs,changes1]=getcurrentcellschanges(ud,refdirname,dirname1,ancestors1);
+		[listofcells2,listofcellnames2,mycellstructs,changes2]=getcurrentcellschanges(ud,refdirname,dirname2,ancestors2);
+		[thelist,thelistinds1,thelistinds2] = intersect(listofcellnames1,listofcellnames2);
+		pvimg1 = analyzetpstack_previewimage('GetPreviewImageData',[],fig,struct('channel',channel,'dirname',dirname1));
+		pvimg2 = analyzetpstack_previewimage('GetPreviewImageData',[],fig,struct('channel',channel,'dirname',dirname2));
+		try,
+			drift1 = analyzetpstack_getdirdrift(ud,dirname1);
+			xyoffset1 = analyzetpstack_getxyoffset(ud,dirname1);
+			drift1 = drift1 + xyoffset1;
+		catch,
+			drift1 = [0 0];
+		end;
+		try,
+			drift2 = analyzetpstack_getdirdrift(ud,dirname1);
+			xyoffset2 = analyzetpstack_getxyoffset(ud,dirname2);
+			drift2 = drift2 + xyoffset2;
+		catch,
+			drift2 = [0 0];
+		end;
+		plottpcellalignment(listofcellnames1(thelistinds1),listofcellnames2(thelistinds2),...
+			changes1(thelistinds1),changes2(thelistinds2),...
+			pvimg1,pvimg2,dirname1,dirname2,drift1,drift2,3);
+
 	case 'UpdateSliceDisplay',
 		v_ = get(findobj(fig,'Tag','sliceList'),'value');
 		currstr_ = get(findobj(fig,'Tag','sliceList'),'string');

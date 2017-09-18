@@ -129,7 +129,6 @@ switch command,
         uicontrol(txt,'position',[338 500+sh 70 20],'String','Slices:');
         
         uicontrol(button,'position',[490 430+sh 120 20],'String','Add slice to DB','Tag','AddDBBt');
-        uicontrol(button,'position',[490 400+sh 120 20],'String','Link to larger image','Tag','AddDBBt');
         uicontrol(button,'position',[490 370+sh 120 20],'String','Check cell alignment','Tag','checkAlignmentBt');
         
         uicontrol(button,'position',[350 350+sh 130 130],'Style','list','String','',...

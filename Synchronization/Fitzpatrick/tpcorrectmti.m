@@ -19,6 +19,8 @@ function [mti2,starttime] = tpcorrectmti(mti, filename,globaltime)
 % 
 % From FITZCORRECTMTI by Steve Van Hooser
 %
-
-[mti2,starttime]=vhlabcorrectmti(mti,filename,globaltime);
-
+if nargin>2,
+	[mti2,starttime]=vhlabcorrectmti(mti,filename,globaltime);
+else,
+	[mti2,starttime]=vhlabcorrectmti(mti,filename);
+end
