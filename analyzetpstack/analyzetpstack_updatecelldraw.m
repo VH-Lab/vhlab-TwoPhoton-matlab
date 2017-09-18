@@ -12,7 +12,7 @@ if isempty(slicestruct),
 			analyzetpstack_getdirdrift(ud,cleandirname));
 		slicestruct.slicexyoffsetlookup = setfield(slicestruct.slicexyoffsetlookup, cleandirname, ...
 			analyzetpstack_getxyoffset(ud,cleandirname));
-		slicestruct.sliceancestorlookup=setfield(slicestruct.sliceancestorlookup,cleandirname, getallparents(ud,cleandirname));
+		slicestruct.sliceancestorlookup=setfield(slicestruct.sliceancestorlookup,cleandirname, analyzetpstack_getallparents(ud,cleandirname));
 	end;
 end;
 slicestructupdate = slicestruct;

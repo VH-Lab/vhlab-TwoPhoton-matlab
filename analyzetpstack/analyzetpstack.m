@@ -128,9 +128,6 @@ switch command,
         %uicontrol(button,'position',[500 500+sh 70 20],'String','Add new slice','Tag','addsliceBt');
         uicontrol(txt,'position',[338 500+sh 70 20],'String','Slices:');
         
-        uicontrol(button,'position',[490 430+sh 120 20],'String','Add slice to DB','Tag','AddDBBt');
-        uicontrol(button,'position',[490 370+sh 120 20],'String','Check cell alignment','Tag','checkAlignmentBt');
-        
         uicontrol(button,'position',[350 350+sh 130 130],'Style','list','String','',...
             'callback','genercallback','Tag','sliceList','Backgroundcolor',[1 1 1]);
         
@@ -340,7 +337,7 @@ switch command,
             disp(['Redrawing for new directory.']);
             % user selected a new directory and we have to recolor
             for i=1:length(ud.celllist),
-                slicestruct = analyzetpstack_updatecelldraw.m(ud,i,slicestruct,newdir,NUMPREVIEWFRAMES);
+                slicestruct = analyzetpstack_updatecelldraw(ud,i,slicestruct,newdir,NUMPREVIEWFRAMES);
             end;
             ud.celldrawinfo.dirname = newdir;
         end; % redrawing for new directory
@@ -348,12 +345,12 @@ switch command,
         [handles,hinds] = intersect(ud.celldrawinfo.h,highlighted);
         for i=1:length(hinds),
             if hinds(i) ~= cv, % if it shouldn't be highlighted
-                slicestruct = analyzetpstack_updatecelldraw.m(ud,hinds(i),slicestruct,newdir,NUMPREVIEWFRAMES);
+                slicestruct = analyzetpstack_updatecelldraw(ud,hinds(i),slicestruct,newdir,NUMPREVIEWFRAMES);
             end;
         end;
         % now highlight appropriate cell
         if ~isempty(ud.celldrawinfo.h),
-            slicestruct = analyzetpstack_updatecelldraw.m(ud,cv,slicestruct,newdir,NUMPREVIEWFRAMES);
+            slicestruct = analyzetpstack_updatecelldraw(ud,cv,slicestruct,newdir,NUMPREVIEWFRAMES);
             set(ud.celldrawinfo.h(cv),'color',[1 1 0],'visible','on');
             set(ud.celldrawinfo.t(cv),'color',[1 1 0],'visible','on');
         end;
@@ -1008,21 +1005,6 @@ switch command,
         fname = stackname; scratchname = fixpath(getscratchdirectory(ud.ds,1));
         filename = [scratchname fname '_' dirname '_SC'];
         save(filename,'r','indimages','-mat');
-    case 'AddDBBt',
-        ud.ds = dirstruct(getpathname(ud.ds));
-        sv = get(ft(fig,'sliceList'),'value');
-        dirname = trimws(ud.slicelist(sv).dirname);
-        [listofcells,listofcellnames,cellstructs]=analyzetpstack_getcurrentcells(ud,dirname);
-        refs = getnamerefs(ud.ds,dirname);
-        foundIt=0;
-        for i=1:length(refs), if strcmp(refs(i).name,'tp'), foundIt = i; break; end; end;
-        depth=num2str(get(ft(fig,'depthEdit'),'string'));
-        xyoffset = analyzetpstack_getxyoffset(ud,dirname);
-        if foundIt>0,
-            analyzetpstack_addtotpdatabase(ud.ds,refs(foundIt),cellstructs,listofcellnames,'analyzetpstack name',stackname,'depth',depth,'xyoffset',xyoffset);
-        else,
-            errordlg(['Could not find two-photon reference for directory ' dirname '.']);
-        end;
     case 'saveBt',
         fname = stackname;
         scratchname = fixpath(getscratchdirectory(ud.ds,1));

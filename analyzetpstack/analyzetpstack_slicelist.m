@@ -42,7 +42,14 @@ switch command,
 		cb.fontsize = 12;
 
 		figure(fig);
-		uicontrol(popup,'position',arg4, 'String',{'Slice command','------','Add new slice','Remove selected slice'},'Tag','sliceListPopup');
+		uicontrol(popup,'position',arg4, 'String',...
+			{'Slice command:','------',...
+				'Add new slice','Remove selected slice','------',...
+				'Add to database', 'Check slice alignment','------',...
+				'Macros:','------',...
+				'Analyze all raw and add to database'
+				},...
+			'Tag','sliceListPopup');
 	case 'sliceListPopup',
 		newcommand = '';
 		v = get(findobj(fig,'Tag','sliceListPopup'),'value');
@@ -53,6 +60,12 @@ switch command,
 					newcommand = 'AddSliceBt';
 				case 'Remove selected slice',
 					newcommand = 'RemoveSliceBt',
+				case 'Add to database',
+					newcommand = 'AddDBBt';
+				case 'Check slice alignment',
+					newcommand = 'checkAlignmentBt';
+				case 'AnalyzeAllRawAddToDatabase',
+					newcommand = 'AnalyzeAllRawAddToDatabaseBt',
 			end;
 		end;
 		set(findobj(fig,'Tag','sliceListPopup'),'value',1);
@@ -128,6 +141,9 @@ switch command,
 		analyzetpstack_slicelist('UpdateSliceDisplay',[],fig);
 		analyzetpstack('UpdateCellList',[],fig);
 
+	case 'AnalyzeAllRawAddToDatabaseBt',
+		error(['not implemented yet.']);
+
 	case 'checkAlignmentBt',
 		sliceind1 = get(findobj(fig,'Tag','sliceList'),'value');
 		currstr_ = get(findobj(fig,'Tag','sliceList'),'string');
@@ -172,7 +188,21 @@ switch command,
 		plottpcellalignment(listofcellnames1(thelistinds1),listofcellnames2(thelistinds2),...
 			changes1(thelistinds1),changes2(thelistinds2),...
 			pvimg1,pvimg2,dirname1,dirname2,drift1,drift2,3);
-
+	case 'AddDBBt',
+		ud.ds = dirstruct(getpathname(ud.ds));
+		sv = get(findobj(fig,'tag','sliceList'),'value');
+		dirname = trimws(ud.slicelist(sv).dirname);
+		[listofcells,listofcellnames,cellstructs]=analyzetpstack_getcurrentcells(ud,dirname);
+		refs = getnamerefs(ud.ds,dirname);
+		foundIt=0;
+		for i=1:length(refs), if strcmp(refs(i).name,'tp'), foundIt = i; break; end; end;
+		depth=num2str(get(findobj(fig,'tag','depthEdit'),'string'));
+		xyoffset = analyzetpstack_getxyoffset(ud,dirname);
+		if foundIt>0,
+			analyzetpstack_addtotpdatabase(ud.ds,refs(foundIt),cellstructs,listofcellnames,'analyzetpstack name',stackname,'depth',depth,'xyoffset',xyoffset);
+		else,
+			errordlg(['Could not find two-photon reference for directory ' dirname '.']);
+		end;
 	case 'UpdateSliceDisplay',
 		v_ = get(findobj(fig,'Tag','sliceList'),'value');
 		currstr_ = get(findobj(fig,'Tag','sliceList'),'string');
