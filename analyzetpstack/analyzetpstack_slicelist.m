@@ -46,7 +46,7 @@ switch command,
 			{'Slice command:','------',...
 				'Add new slice','Remove selected slice','------',...
 				'Add to database', 'Check slice alignment','------',...
-				'Macros:','------',...
+				'Macros:', ...
 				'Analyze all raw and add to database'
 				},...
 			'Tag','sliceListPopup');
@@ -64,7 +64,7 @@ switch command,
 					newcommand = 'AddDBBt';
 				case 'Check slice alignment',
 					newcommand = 'checkAlignmentBt';
-				case 'AnalyzeAllRawAddToDatabase',
+				case 'Analyze all raw and add to database',
 					newcommand = 'AnalyzeAllRawAddToDatabaseBt',
 			end;
 		end;
@@ -142,7 +142,21 @@ switch command,
 		analyzetpstack('UpdateCellList',[],fig);
 
 	case 'AnalyzeAllRawAddToDatabaseBt',
-		error(['not implemented yet.']);
+		sl = get(findobj(fig,'Tag','sliceList'),'string');
+		for v=1:length(sl),
+			set(findobj(fig,'Tag','sliceList'),'value',v);
+			analyzetpstack_slicelist('UpdateSliceDisplay',[],fig);
+			f = gcf;
+			analyzetpstack('AnalyzeRawBt',[],fig);
+			fnew = gcf;
+			if fnew~=f & 0, % turn this off, it is probably useful to force user to look at results
+				close(fnew);
+			end
+		end
+		for v=1:length(sl),
+			set(findobj(fig,'Tag','sliceList'),'value',v);
+			analyzetpstack_slicelist('AddDBBt',[],fig);
+		end
 
 	case 'checkAlignmentBt',
 		sliceind1 = get(findobj(fig,'Tag','sliceList'),'value');

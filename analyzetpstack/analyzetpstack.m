@@ -710,7 +710,7 @@ switch command,
         blankIDstr = get(ft(fig,'BlankIDEdit'),'string');
         if ~isempty(blankIDstr), blankID = eval(blankIDstr); else, blankID = []; end;
         ancestors = analyzetpstack_getallparents(ud,dirname);
-        [listofcells,listofcellnames,cellstructs]=analyzetpstack_analyzetpstack_getcurrentcellschanges(ud,refdirname,dirname,ancestors);
+        [listofcells,listofcellnames,cellstructs]=analyzetpstack_getcurrentcellschanges(ud,refdirname,dirname,ancestors);
         fname = stackname; scratchname = fixpath(getscratchdirectory(ud.ds,1));
         needtorun = 1;
         channel=fix(str2num(get(ft(fig,'stimChannelEdit'),'string')));
@@ -839,8 +839,8 @@ switch command,
 		error(['Error checking alignment: ' dirname1 ' and ' dirname2 ' are not recordings at the same place.']);
 	end;
         refdirname = analyzetpstack_getrefdirname(ud,dirname1); % should be same for both
-        [listofcells1,listofcellnames1,mycellstructs,changes1]=analyzetpstack_analyzetpstack_getcurrentcellschanges(ud,refdirname,dirname1,ancestors1);
-        [listofcells2,listofcellnames2,mycellstructs,changes2]=analyzetpstack_analyzetpstack_getcurrentcellschanges(ud,refdirname,dirname2,ancestors2);
+        [listofcells1,listofcellnames1,mycellstructs,changes1]=analyzetpstack_getcurrentcellschanges(ud,refdirname,dirname1,ancestors1);
+        [listofcells2,listofcellnames2,mycellstructs,changes2]=analyzetpstack_getcurrentcellschanges(ud,refdirname,dirname2,ancestors2);
         [thelist,thelistinds1,thelistinds2] = intersect(listofcellnames1,listofcellnames2);
 	pvimg1 = analyzetpstack_previewimage('GetPreviewImageData',[],fig,struct('channel',channel,'dirname',dirname1));
 	pvimg2 = analyzetpstack_previewimage('GetPreviewImageData',[],fig,struct('channel',channel,'dirname',dirname2));
@@ -898,7 +898,7 @@ switch command,
         refdirname = analyzetpstack_getrefdirname(ud,dirname);
         fulldirname = [fixpath(getpathname(ud.ds)) dirname];
         ancestors = analyzetpstack_getallparents(ud,dirname);
-        [listofcells,listofcellnames]=analyzetpstack_analyzetpstack_getcurrentcellschanges(ud,refdirname,dirname,ancestors);
+        [listofcells,listofcellnames]=analyzetpstack_getcurrentcellschanges(ud,refdirname,dirname,ancestors);
         fname = stackname; scratchname = fixpath(getscratchdirectory(ud.ds,1));
         needtorun = 1;
         channel=fix(str2num(get(ft(fig,'stimChannelEdit'),'string')));
