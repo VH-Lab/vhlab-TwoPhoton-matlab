@@ -355,10 +355,8 @@ switch command,
 	case 'GetPreviewImageData', % gets a single channel's worth of preview data and possibly updates USERDATA
 		channel = arg4.channel;
 		dirname = arg4.dirname;
-		dirnamelist = strtrim(get(ft(fig,'sliceList'),'string')); % trim off whitespace of these
 		view = arg4.view;
 		frame = arg4.frame;
-		v = strmatch(dirname,dirnamelist);
 		experpath = getpathname(ud.ds);
 
 		try,
