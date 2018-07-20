@@ -53,7 +53,7 @@ else,
         do_analyze_i = [];
         for i=1:length(thetrials),
                 do_analyze_i = cat(2,do_analyze_i,...
-                fix(1+(thetrials(i)-1)*length(do)/tottrials):fix(thetrials(i)*length(do)/tottrials));
+	                fix(1+(thetrials(i)-1)*length(do)/tottrials):fix(thetrials(i)*length(do)/tottrials));
         end;
 end;
 
@@ -79,7 +79,8 @@ for i=1:length(do_analyze_i),
 end;
 
 im = tppreview(dirname,2,1,channel);
-im_outline = zeros(size(im)); im_outline(35:end-35,35:end-35) = 1;
+im_outline = zeros(size(im));
+im_outline(35:end-35,35:end-35) = 1;
 pixinds = {find(im_outline==1)};
 im_outline = 0*im_outline(35:end-35,35:end-35);
  % now sort into individual stims

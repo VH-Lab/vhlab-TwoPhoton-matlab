@@ -190,6 +190,7 @@ for j=1:size(intervals,1),
 			end;
 			thistime = t_(thepixelinds);
 			newtinds = find(thistime>=intervals(intervalorder(j),1)&thistime<=intervals(intervalorder(j),2)); % trim out-of-bounds points
+			%newtinds = 1:numel(thepixelinds); % if we ignore the frame time edge effects, usually not good
 			if mode==1,
 				if length(newtinds)==length(thepixelinds),
 					thistime = thistime(newtinds); thisdata = thisdata(newtinds);
@@ -198,13 +199,19 @@ for j=1:size(intervals,1),
 				end;
 			elseif mode==0,
 				if length(newtinds)==length(thepixelinds),
-					thistime = thistime(newtinds); thisdata = thisdata(newtinds);
-				else, thistime = []; thisdata = [];
+					thistime = thistime(newtinds);
+					thisdata = thisdata(newtinds);
+				else,
+					thistime = [];
+					thisdata = [];
 				end;
 			elseif mode==3|mode==21,
 				if length(newtinds)==length(thepixelinds),
-					thistime = thistime(newtinds); thisdata = thisdata(newtinds);
-				else, thistime = []; thisdata = [];
+					thistime = thistime(newtinds);
+					thisdata = thisdata(newtinds);
+				else,
+					thistime = [];
+					thisdata = [];
 				end;
 				if ~isempty(thistime),
 					accum{i}=nansum(cat(3,accum{i},thisdata),3);
