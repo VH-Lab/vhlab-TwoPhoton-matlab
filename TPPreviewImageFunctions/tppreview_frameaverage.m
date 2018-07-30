@@ -68,8 +68,12 @@ end;
 im = [];
 for i=1:numberFrames,
 	imnew = tpreadframe(dirnames{1},fnameparameters{1},ffile(n(i),1),channel,ffile(n(i),2));
-	im = cat(3,im,imnew);
+	if isempty(im),
+		im = double(imnew)*1/numberFrames;
+	else,
+		im = im + double(im_new)*1/numberFrames;
+	end
 end;
 
-if size(im,3)>1, im = mean(double(im),3); else, im = double(im); end;
-im = reshape(im,params{1}.Main.Lines_per_frame,params{1}.Main.Pixels_per_line);
+%if size(im,3)>1, im = mean(double(im),3); else, im = double(im); end;
+%im = reshape(im,params{1}.Main.Lines_per_frame,params{1}.Main.Pixels_per_line);
