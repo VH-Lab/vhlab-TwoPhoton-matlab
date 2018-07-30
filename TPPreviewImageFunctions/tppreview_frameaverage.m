@@ -71,7 +71,7 @@ for i=1:numberFrames,
 	if isempty(im),
 		im = double(imnew)*1/numberFrames;
 	else,
-		im = im + double(im_new)*1/numberFrames;
+		im = im + double(imnew)*1/numberFrames;
 	end
 end;
 

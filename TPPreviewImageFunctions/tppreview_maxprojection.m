@@ -69,7 +69,7 @@ im = [];
 for i=1:numberFrames,
 	imnew = tpreadframe(dirnames{1},fnameparameters{1},ffile(n(i),1),channel,ffile(n(i),2));
 	if isempty(im),
-		im = double(innew);
+		im = double(imnew);
 	else,
 		im = max(cat(3,im,double(imnew)),[],3);
 	end;
