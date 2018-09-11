@@ -19,6 +19,9 @@ pi = find(pwd==filesep); pwd = [pwd(1:pi(end)-1) filesep];
 d1 = dir([pwd 'Platforms' filesep '*']);
 d2 = dir([pwd 'Synchronization' filesep '*']);
 
+d1 = dirlist_trimdots(d1,1);
+d2 = dirlist_trimdots(d2,1);
+
 warn = warning;
 
 warning off;
