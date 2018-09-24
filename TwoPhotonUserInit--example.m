@@ -42,8 +42,10 @@ analyzetpstack_active_drift_devices('add','manual',...
 TPPreviewImageFunctionListClear;
 TPPreviewImageFunctionListAdd('tppreview_frameaverage','default',struct('firstFrames',1,'numFrames',30));
 TPPreviewImageFunctionListAdd('tppreview_frameaverage','frame_average_500',struct('firstFrames',1,'numFrames',500));
+TPPreviewImageFunctionListAdd('tppreview_frameaverage','frame_average_200',struct('firstFrames',1,'numFrames',200));
 TPPreviewImageFunctionListAdd('tppreview_maxprojection','max_projection_500',struct('firstFrames',1,'numFrames',500));
 TPPreviewImageFunctionListAdd('tppreview_stdprojection','std_dev_projection_500',struct('firstFrames',1,'numFrames',500));
+TPPreviewImageFunctionListAdd('tppreview_stdprojection','std_dev_projection_200',struct('firstFrames',1,'numFrames',200));
 TPPreviewImageFunctionListAdd('tppreview_timethreshaverage','Diff_th500_blur',struct('numFrames',100,'smoothness',5,'diffThresh',500));
 TPPreviewImageFunctionListAdd('tppreview_timethreshaverage','Diff_th500_sharp',struct('numFrames',100,'smoothness',1,'diffThresh',500));
 TPPreviewImageFunctionListAdd('tppreview_timethreshaverage','Diff_th20_blur',struct('numFrames',100,'smoothness',5,'diffThresh',20));
