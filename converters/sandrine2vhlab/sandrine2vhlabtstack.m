@@ -101,8 +101,6 @@ for i=1:r.getSeriesCount(),
 	useit(i) = 1;
 end;
 
-useit
-
 for i=1:r.getSeriesCount(),
 
 	r.setSeries(i-1);
@@ -111,6 +109,7 @@ for i=1:r.getSeriesCount(),
 		dgca3var = log(i,1);
 		controlinhibvar = log(i,2);
 
+		namestr = 'generic';
 		if dgca3var==1,
 			namestr = 'dg_';
 		elseif dgca3var==3,
@@ -123,7 +122,6 @@ for i=1:r.getSeriesCount(),
 			namestr = [namestr 'inhib'];
 		end
 
-		namestr = '';
 		nameref.name = 'tp';
 		nameref.ref = ref;
 		nameref.type = 'prairietp';
@@ -154,7 +152,7 @@ for i=1:r.getSeriesCount(),
 			end
 		end
 
-		p = struct('parameter','FrameRate','value',median(diff(frame_dT{i})),'desc','The frame rate in Hz');
+		p = struct('parameter','FrameRate','value',1/median(diff(frame_dT{i})),'desc','The frame rate in Hz');
 		saveStructArray([destination filesep testdir filesep 'params.tiffstack'], p);
 			
 		ref = ref+1;
