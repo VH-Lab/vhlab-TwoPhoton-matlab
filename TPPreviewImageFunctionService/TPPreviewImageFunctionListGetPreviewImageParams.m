@@ -29,6 +29,9 @@ TPPreviewImageFunctionListGlobals;
 
 filename = [dirname filesep 'tppreview_' shortname '_ch' int2str(channel) '.mat'];
 
+parentdir = fileparts(dirname);
+
+
 goodload = 0;
 if exist(filename)==2,
 	if frame~=0,
@@ -66,6 +69,18 @@ if exist(filename)==2,
 		        initind = initind + numFrames;
 		end;
 		% params already loaded above
+
+		% chuck the loaded parent path, it might be bogus
+		for i=1:numel(dirnames),
+			delimiters = find(dirnames{i} == '/' | dirnames{i} == '\'); % cannot call fileparts because cache might be from different platform
+			if isempty(delimiters),
+				delimeters = 0; % there is no path pre-pended
+			end;
+			dirnamehere = dirnames{i}(delimiters(end)+1:end);
+			dirnames{i} = [parentdir filesep dirnamehere];
+		end
+
+
 		pvimg = tpreadframe(dirnames{1},tpfnameparameters{1},ffile(frame,1),channel,ffile(frame,2));
 		total_frames = length(params{1}.Image_TimeStamp__us_);
 		return;
