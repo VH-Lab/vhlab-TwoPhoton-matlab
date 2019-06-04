@@ -1,4 +1,4 @@
-function [ims,channels] = tppreview_timethreshaverage(dirnames, tpparams, channellist, parameters, shortname)
+function [ims,channels] = tppreview_timethreshaverage(dirnames, tpparams, channellist, parameters, shortname, dirname)
 % TPPREVIEW_TIMETHRESHAVERAGE - Make a preview image based on thresholded temporal differences
 %
 %  [IMS,CHANNELS] = TPPREVIEW_TIMETHRESHAVERAGE(DIRNAME,TPPARAMS,CHANNELLIST,PARAMETERS)

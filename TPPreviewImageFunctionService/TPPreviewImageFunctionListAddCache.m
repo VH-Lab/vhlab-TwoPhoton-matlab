@@ -1,8 +1,8 @@
-function TPPreviewImageFunctionListAddCache(filename, pvimg, params, parameters, dirname, tpfnameparameters, total_frames, dirnames)
+function TPPreviewImageFunctionListAddCache(filename, pvimg, params, parameters, dirname, tpfnameparameters, total_frames, dirnames, videoinfo)
 % TPPREVIEWIMAGEFUNCTIONLISTADDCACHE - Add preview image parameters to the cache
 %
 %  TPPREVIEWIMAGEFUNCTIONLISTADDCACHE(FILENAME, PREVIEWIMAGE, PARAMS, PARAMETERS, ...
-%           DIRNAME, TPFNAMEPARAMETERS, TOTAL_FRAMES, DIRNAMES)
+%           DIRNAME, TPFNAMEPARAMETERS, TOTAL_FRAMES, DIRNAMES, VIDEOINFO)
 %
 %  Adds the TPPreviewImageFunctionList data to the TPPreviewImageCache global variable
 %  If another cache entry already contains the filename, then the information is overrwritten and 

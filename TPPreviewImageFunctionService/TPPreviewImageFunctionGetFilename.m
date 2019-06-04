@@ -10,9 +10,9 @@ function [static_filename, video_filename] = TPPreviewImageFunctionGetFilename(d
 %
 
 static_filename = [dirname filesep 'tppreview_' shortname ...
-	'_ch_' int2str(channel) '.mat'];
+	'_ch' int2str(channel) '.mat'];
 
 video_filename = [dirname filesep 'tppreviewvideo_' shortname ...
-	'_ch_' int2str(channel) '.tiff'];
+	'_ch' int2str(channel) '.tiff'];
 
 

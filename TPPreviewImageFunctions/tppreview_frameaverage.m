@@ -1,4 +1,4 @@
-function [ims,channels] = tppreview_frameaverage(dirnames, tpparams, channellist, parameters, shortname)
+function [ims,channels] = tppreview_frameaverage(dirnames, tpparams, channellist, parameters, shortname, dirname)
 
 channels = []; fnameparameters = {};
 

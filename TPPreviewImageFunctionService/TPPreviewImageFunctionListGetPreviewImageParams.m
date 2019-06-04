@@ -23,6 +23,8 @@ if nargin<4,
 	frame = 0;
 end;
 
+verbose = 0;
+
 frame = round(frame); % make sure it is an integer
 
 TPPreviewImageFunctionListGlobals;
@@ -32,16 +34,19 @@ TPPreviewImageFunctionListGlobals;
 parentdir = fileparts(dirname);
 
 goodload = 0;
-if exist(static_filename)==2,
+if exist(static_filename,'file'),
+	out = TPPreviewImageFunctionListGetCache([static_filename]);
 	if frame~=0,
-		out = TPPreviewImageFunctionListGetCache([static_filename]);
 		params = out.params;
+		total_frames = length(params{1}.Image_TimeStamp__us_);
 		try,
 			dirnames = out.dirnames;
 			tpfnameparameters = out.tpfnameparameters;
+			videoinfo = out.videoinfo;
 			if ~exist('tpfnameparameters','var') | ~exist('dirnames','var'), error(['variables we needed were not found.']); end;
+			if ~exist('videoinfo','var'), error(['variables we needed were not found.']); end;
 		catch,
-			%disp(['recomputing tpfnameparameters and dirnames']);
+			if verbose, disp(['recomputing tpfnameparameters and dirnames']); end;
 
 			dirnames = tpdirnames(dirname);
 			tpparams = {};
@@ -56,11 +61,18 @@ if exist(static_filename)==2,
 				tpparams = tpreadconfig(dirnames);
 				tpfnameparameters{1} = tpfnameparams(dirnames,channel,tpparams);
 			end;
-			save([static_filename],'tpfnameparameters','dirnames','-append','-mat');
-			TPPreviewImageListAddCache(static_filename,pvimg,params,out.parameters,out.dirname,tpfnameparameters,total_frames,dirnames);
+			if exist(video_filename,'file'),
+				videoinfo = imfinfo(video_filename);
+			else,
+				videoinfo = [];
+			end;
+			save([static_filename],'tpfnameparameters','dirnames','videoinfo','-append','-mat');
+			TPPreviewImageFunctionListAddCache(static_filename, out.pvimg, out.params, out.parameters, out.dirname, ...
+				tpfnameparameters,total_frames,dirnames,videoinfo);
 		end;
 
 		if ~exist(video_filename,'file'),
+			if verbose, disp('no video file but want frames'); end;
 			ffile = repmat([0 0],length(params{1}.Image_TimeStamp__us_),1);
 			initind = 1;
 
@@ -81,17 +93,13 @@ if exist(static_filename)==2,
 				dirnamehere = dirnames{i}(delimiters(end)+1:end);
 				dirnames{i} = [parentdir filesep dirnamehere];
 			end
-
 			pvimg = tpreadframe(dirnames{1},tpfnameparameters{1},ffile(frame,1),channel,ffile(frame,2));
-			total_frames = length(params{1}.Image_TimeStamp__us_);
 			return;
 		else,
-			pvimg = imread(video_filename, frame);
-			total_frames = length(params{1}.Image_TimeStamp__us_);
+			pvimg = imread(video_filename, frame, 'info', videoinfo);
 			return;
 		end;
 	else,
-		out = TPPreviewImageFunctionListGetCache([static_filename]);
 		pvimg = out.pvimg;
 		params= out.params;
 		parameters = out.parameters;
@@ -106,7 +114,12 @@ if exist(static_filename)==2,
 		goodload = gotmatch;
 	end;
 end;
-	
+
+if verbose,	
+	disp(['file exists is ' int2str(exist(static_filename,'file')) ]); 
+	disp(['Goodload is ' int2str(goodload) '.']);
+end;
+
 if ~goodload,	% not present or old parameters so must compute or re-compute
 
 	dirnames = tpdirnames(dirname);
@@ -127,18 +140,23 @@ if ~goodload,	% not present or old parameters so must compute or re-compute
 	match = 0;
 	for i=1:length(TPPreviewImageFunctionList),
 		if strcmp(TPPreviewImageFunctionList(i).shortname,shortname),
-%		disp(['about to run ' TPPreviewImageFunctionList(i).FunctionName '.'])
 			match = 1;
 			eval(['[ims,thechannel] = ' TPPreviewImageFunctionList(i).FunctionName  ...
-				'(dirnames,tpparams,channel,TPPreviewImageFunctionList(i).parameters, TPPreviewImageFunctionList(i).shortname);']);
+				'(dirnames,tpparams,channel,TPPreviewImageFunctionList(i).parameters, TPPreviewImageFunctionList(i).shortname,dirname);']);
 			for j=1:length(thechannel),
 				pvimg = ims{j};
 				params=tpparams;
 				parameters = TPPreviewImageFunctionList(i).parameters;
-				save([ dirname filesep 'tppreview_' shortname '_ch' int2str(thechannel(j)) '.mat'], ...
-					'pvimg','params','parameters','dirname','tpfnameparameters','total_frames','dirnames','-mat');
-				TPPreviewImageFunctionListAddCache(static_filename,pvimg,params,parameters,...
-					dirname,tpfnameparameters,total_frames,dirnames);
+				[static_filename_, video_filename_] = TPPreviewImageFunctionGetFilename(dirname, shortname, thechannel(j), frame);
+				if exist(video_filename_),
+					videoinfo = imfinfo(video_filename_);
+				else,
+					videoinfo = [];
+				end;
+				save(static_filename_, 'pvimg','params','parameters','dirname','tpfnameparameters',...
+					'total_frames','dirnames','videoinfo','-mat');
+				TPPreviewImageFunctionListAddCache(static_filename_,pvimg,params,parameters,...
+					dirname,tpfnameparameters,total_frames,dirnames,videoinfo);
 			end;
 		end;
 	end;

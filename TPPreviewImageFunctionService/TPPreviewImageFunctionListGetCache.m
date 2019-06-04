@@ -16,17 +16,22 @@ else,
 end;
 
 if ~isempty(match),
+
 	out = TPPreviewImageCache(match);
+
 else,
+
 	vars = load(filename);
-	possiblyemptyfieldnames = {'tpfnameparameters','total_frames','dirnames'};
+	possiblyemptyfieldnames = {'tpfnameparameters','total_frames','dirnames','videoinfo'};
 	for i=1:length(possiblyemptyfieldnames),
 		if ~isfield(vars,possiblyemptyfieldnames{i}),
 			vars = setfield(vars,possiblyemptyfieldnames{i},[]);
 		end;
 	end;
-	TPPreviewImageFunctionListAddCache(filename,vars.pvimg, vars.params, vars.parameters, vars.dirname, vars.tpfnameparameters, vars.total_frames, vars.dirnames);
+	TPPreviewImageFunctionListAddCache(filename,vars.pvimg, vars.params, vars.parameters, vars.dirname, ...
+			vars.tpfnameparameters, vars.total_frames, vars.dirnames,vars.videoinfo);
 	out = TPPreviewImageFunctionListGetCache(filename); % make sure we get the structure in the right order, vars might differ from out; 
+
 end;	
 
 
