@@ -1,4 +1,4 @@
-function [ims,channels] = tppreview_maxprojection(dirnames, tpparams, channellist, parameters)
+function [ims,channels] = tppreview_maxprojection(dirnames, tpparams, channellist, parameters, shortname)
 
 channels = []; fnameparameters = {};
 

@@ -1,4 +1,4 @@
-function [pvimg, params,total_frames] = TPPreviewImageFunctionListGetPreviewImageParams(dirname,shortname,channel,frame)
+function [pvimg, params, total_frames] = TPPreviewImageFunctionListGetPreviewImageParams(dirname, shortname, channel, frame)
 % TPPREVIEWIMAGEFUNCTIONLISTGETPREVIEWIMAGEPARAMS - Get preview image and parameters
 %
 %   [PVIMG,PVPARAMS,TOTAL_FRAMES] = TPPREVIEWIMAGEFUNCTIONLISTGETPREVIEWIMAGEPARAMS(DIRNAME, ...
@@ -27,15 +27,14 @@ frame = round(frame); % make sure it is an integer
 
 TPPreviewImageFunctionListGlobals;
 
-filename = [dirname filesep 'tppreview_' shortname '_ch' int2str(channel) '.mat'];
+[static_filename, video_filename] = TPPreviewImageFunctionGetFilename(dirname, shortname, channel, frame);
 
 parentdir = fileparts(dirname);
 
-
 goodload = 0;
-if exist(filename)==2,
+if exist(static_filename)==2,
 	if frame~=0,
-		out = TPPreviewImageFunctionListGetCache([filename]);
+		out = TPPreviewImageFunctionListGetCache([static_filename]);
 		params = out.params;
 		try,
 			dirnames = out.dirnames;
@@ -57,35 +56,42 @@ if exist(filename)==2,
 				tpparams = tpreadconfig(dirnames);
 				tpfnameparameters{1} = tpfnameparams(dirnames,channel,tpparams);
 			end;
-			save([filename],'tpfnameparameters','dirnames','-append','-mat');
-			TPPreviewImageListAddCache(filename,pvimg,params,out.parameters,out.dirname,tpfnameparameters,total_frames,dirnames);
+			save([static_filename],'tpfnameparameters','dirnames','-append','-mat');
+			TPPreviewImageListAddCache(static_filename,pvimg,params,out.parameters,out.dirname,tpfnameparameters,total_frames,dirnames);
 		end;
-		ffile = repmat([0 0],length(params{1}.Image_TimeStamp__us_),1);
-		initind = 1;
 
-		for i=1:params{1}.Main.Total_cycles,
-		        numFrames = getfield(getfield(params{1},['Cycle_' int2str(i)]),'Number_of_images');
-		        ffile(initind:initind+numFrames-1,:) = [repmat(i,numFrames,1) (1:numFrames)'];
-		        initind = initind + numFrames;
-		end;
-		% params already loaded above
+		if ~exist(video_filename,'file'),
+			ffile = repmat([0 0],length(params{1}.Image_TimeStamp__us_),1);
+			initind = 1;
 
-		% chuck the loaded parent path, it might be bogus
-		for i=1:numel(dirnames),
-			delimiters = find(dirnames{i} == '/' | dirnames{i} == '\'); % cannot call fileparts because cache might be from different platform
-			if isempty(delimiters),
-				delimeters = 0; % there is no path pre-pended
+			for i=1:params{1}.Main.Total_cycles,
+				numFrames = getfield(getfield(params{1},['Cycle_' int2str(i)]),'Number_of_images');
+				ffile(initind:initind+numFrames-1,:) = [repmat(i,numFrames,1) (1:numFrames)'];
+				initind = initind + numFrames;
 			end;
-			dirnamehere = dirnames{i}(delimiters(end)+1:end);
-			dirnames{i} = [parentdir filesep dirnamehere];
-		end
+			% params already loaded above
 
+			% chuck the loaded parent path, it might be bogus
+			for i=1:numel(dirnames),
+				% cannot call fileparts because cache might be from different platform
+				delimiters = find(dirnames{i} == '/' | dirnames{i} == '\'); 
+				if isempty(delimiters),
+					delimeters = 0; % there is no path pre-pended
+				end;
+				dirnamehere = dirnames{i}(delimiters(end)+1:end);
+				dirnames{i} = [parentdir filesep dirnamehere];
+			end
 
-		pvimg = tpreadframe(dirnames{1},tpfnameparameters{1},ffile(frame,1),channel,ffile(frame,2));
-		total_frames = length(params{1}.Image_TimeStamp__us_);
-		return;
+			pvimg = tpreadframe(dirnames{1},tpfnameparameters{1},ffile(frame,1),channel,ffile(frame,2));
+			total_frames = length(params{1}.Image_TimeStamp__us_);
+			return;
+		else,
+			pvimg = imread(video_filename, frame);
+			total_frames = length(params{1}.Image_TimeStamp__us_);
+			return;
+		end;
 	else,
-		out = TPPreviewImageFunctionListGetCache([filename]);
+		out = TPPreviewImageFunctionListGetCache([static_filename]);
 		pvimg = out.pvimg;
 		params= out.params;
 		parameters = out.parameters;
@@ -124,14 +130,15 @@ if ~goodload,	% not present or old parameters so must compute or re-compute
 %		disp(['about to run ' TPPreviewImageFunctionList(i).FunctionName '.'])
 			match = 1;
 			eval(['[ims,thechannel] = ' TPPreviewImageFunctionList(i).FunctionName  ...
-				'(dirnames,tpparams,channel,TPPreviewImageFunctionList(i).parameters);']);
+				'(dirnames,tpparams,channel,TPPreviewImageFunctionList(i).parameters, TPPreviewImageFunctionList(i).shortname);']);
 			for j=1:length(thechannel),
 				pvimg = ims{j};
 				params=tpparams;
 				parameters = TPPreviewImageFunctionList(i).parameters;
 				save([ dirname filesep 'tppreview_' shortname '_ch' int2str(thechannel(j)) '.mat'], ...
 					'pvimg','params','parameters','dirname','tpfnameparameters','total_frames','dirnames','-mat');
-				TPPreviewImageFunctionListAddCache(filename,pvimg,params,parameters,dirname,tpfnameparameters,total_frames,dirnames);
+				TPPreviewImageFunctionListAddCache(static_filename,pvimg,params,parameters,...
+					dirname,tpfnameparameters,total_frames,dirnames);
 			end;
 		end;
 	end;

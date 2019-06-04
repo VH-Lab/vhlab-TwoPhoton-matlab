@@ -33,12 +33,18 @@ do = getDisplayOrder(s.stimscript);
 
 tottrials = length(do)/numStims(s.stimscript);
 
-if isempty(trials), trials = 1:tottrials; end;
-if isempty(thestims), thestims = 1:numStims(s.stimscript); end;
+if isempty(trials),
+	trials = 1:tottrials;
+end;
+if isempty(thestims),
+	thestims = 1:numStims(s.stimscript);
+end;
 do_analyze_i = [];
+
 for i=1:length(trials),
 	thistrial = fix(1+(trials(i)-1)*length(do)/tottrials):fix(trials(i)*length(do)/tottrials);
-	[dummy,thesestims] = intersect(do(thistrial),thestims); thesestims = sort(thesestims);
+	[dummy,thesestims] = intersect(do(thistrial),thestims);
+	thesestims = sort(thesestims);
 	do_analyze_i = cat(2,do_analyze_i,thistrial(thesestims));
 end;
 
@@ -56,7 +62,8 @@ while ~isempty(notvisited),
 	norun = find(di~=1);
 	if isempty(norun),
 		rununtil = notvisited(end);
-	else, rununtil = notvisited(norun(1));
+	else,
+		rununtil = notvisited(norun(1));
 	end;
 	%notvisited(1), rununtil,
 	interval(end+1,:) = [s.mti{do_analyze_i(notvisited(1))}.startStopTimes(2) - 4 ...
@@ -65,7 +72,10 @@ while ~isempty(notvisited),
 end;
 
 pv=tppreview(dirname,5,1,channel);
-im=zeros(size(pv));im(15:end-15,15:end-15)=1;pixels=find(im==1);im=im(15:end-15,15:end-15);
+im=zeros(size(pv));
+im(15:end-15,15:end-15)=1;
+pixels=find(im==1);
+im=im(15:end-15,15:end-15);
 pv=pv(15:end-15,15:end-15);
 
 [data,t] = tpreaddata(dirname,interval-starttime,{pixels},0,channel);
@@ -91,7 +101,9 @@ for i=1:size(interval,1),
 end;
  
 
-if diffnc, mn= 0; end;
+if diffnc,
+	mn= 0;
+end;
 M = struct('cdata',[],'colormap',[]); M = M([]);
 
 hh = [];
@@ -108,10 +120,13 @@ for i=1:size(interval,1),
 		axis([tm-3 tm+3 0 4]);
 		if ~isempty(find(stimints(:,1)<=tm&stimints(:,2)>=tm)),
 			set(ax1,'Color',[1 0 0]);
-		else, set(ax1,'Color',[1 1 1]);
+		else,
+			set(ax1,'Color',[1 1 1]);
 		end;
-		ch=get(ax1,'children');set(ax1,'children',[ch(2:end);ch(1)]);
-		axes(ax2); cla; 
+		ch=get(ax1,'children');
+		set(ax1,'children',[ch(2:end);ch(1)]);
+		axes(ax2);
+		cla; 
 		myframe = conv2((frameshere(:,:,k)-diffnc*pv),ones(1,1)/(sum(sum(ones(1,1)))),'same');
 		image(rescale(myframe,[mn 3000],[0 256]));
 		set(ax2,'xtick',[],'ytick',[]);
@@ -122,3 +137,4 @@ end;
 movie2avi(M,filename,'FPS',fps,'compression','none');
 
 close(H);
+
