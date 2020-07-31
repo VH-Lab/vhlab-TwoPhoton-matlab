@@ -11,6 +11,22 @@ function sandrine2vhlabtstack(source, destination)
 %    sandrine2vhlabtstack('C:\mydataorig\myfile.lif','C:\myvhdata\2012-05-20')
 %
 %
+%   The converter examines the file 'sandrine_codes.tsv', a tab-separated-value file
+%   with fields "searchstring", "namestring", and "value. "searchstring" indicates the 
+%   string that is searched for in the image name; if a match is found, then the corresponding
+%   namestring is added to the tiff file name of the converted file, and the value is added to the
+%   test directory name.
+%
+%   Example:
+%   searchstring     | namestring    | value | 
+%   ------------------------------------------
+%   ca3              | ca3_          | 30000 |
+%
+%   If the string 'ca3' is found in the ImageName property of myfile.lif, then the converted TIF file name
+%   will begin with 'ca3_' and the test folder number will be incremented by 30000.
+%
+%
+%   See also: type sandrine_codes.tsv
 
 disp(['Reading file ' source '...']);
 [x,xmlfile] = bioformats2xml(source);
@@ -60,6 +76,13 @@ r = bfGetReader(source);
 disp(['Number of image names retrieved: ' int2str(numel(imageNames)) ', seriesCount ' int2str(r.getSeriesCount()) '.' ])
 disp([cell2str(imageNames)])
 
+
+output_dirvalues = {};
+output_dirnames = {};
+output_filenames = {};
+parentdir = fileparts(which('sandrine2vhlabtstack'));
+instructions = loadStructArray([parentdir filesep 'sandrine_codes.tsv']);
+
 log = [ ]; % [DG/CA3 1/3 , control/inhib 1/2]
 
 logcount = [];
@@ -74,31 +97,24 @@ try, mkdir(destination); end;
 
 for i=1:r.getSeriesCount(),
 
-	dgca3var = 0;
-	controlinhibvar = 0;
+	output_dirvalues{i} = 0;
+	output_filenames{i} = '';
 
-	if ~isempty(strfind(lower(imageNames{i}),'dg')),
-		dgca3var = 1;
-	end;
-	if ~isempty(strfind(lower(imageNames{i}),'ca3')),
-		dgca3var = 3;
-	end;
-	if ~isempty(strfind(lower(imageNames{i}),'cn')),
-		controlinhibvar = 1;
-	end;
-	if ~isempty(strfind(lower(imageNames{i}),'inhib')),
-		controlinhibvar = 2;
+	for j=1:numel(instructions),
+		if ~isempty(strfind(lower(imageNames{i}),lower(instructions(j).searchstring))),
+			output_filenames{i} = [output_filenames{i} instructions(j).namestring];
+			output_dirvalues{i} = output_dirvalues{i} + instructions(j).value;
+		end
 	end;
 
-	log = [log; dgca3var controlinhibvar];
+	output_dirnames{i} = ['t' sprintf('%.5d',output_dirvalues{i})];
 
-	logcount(end+1) = sum( double(log(:,1)==dgca3var & log(:,2)==controlinhibvar) );
-
-	if logcount(end)>1, % must be prior entries
-		useit(find(  log(:,1)==dgca3var & log(:,2)==controlinhibvar )) = 0;
-	end
+	indexes = find(strcmp(output_dirnames{i},output_dirnames));
+	indexes = indexes(find(indexes<i));
+	useit(indexes) = 0;
 
 	useit(i) = 1;
+
 end;
 
 for i=1:r.getSeriesCount(),
@@ -106,27 +122,12 @@ for i=1:r.getSeriesCount(),
 	r.setSeries(i-1);
 
 	if useit(i),
-		dgca3var = log(i,1);
-		controlinhibvar = log(i,2);
-
-		namestr = 'generic';
-		if dgca3var==1,
-			namestr = 'dg_';
-		elseif dgca3var==3,
-			namestr = 'ca3_';
-		end;
-
-		if controlinhibvar==1,
-			namestr = [namestr 'control'];
-		elseif controlinhibvar==2,
-			namestr = [namestr 'inhib'];
-		end
-
 		nameref.name = 'tp';
 		nameref.ref = ref;
 		nameref.type = 'prairietp';
 
-		testdir= ['t' int2str(dgca3var) int2str(controlinhibvar) sprintf('%.3d',1) ];
+		testdir = output_dirnames{i};
+		namestr = output_filenames{i};
 
 		disp(['Making testdir ' testdir ' with filename ' namestr '.tif...']);
 

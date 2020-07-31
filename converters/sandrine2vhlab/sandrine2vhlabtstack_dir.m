@@ -5,6 +5,15 @@ function sandrine2vhlabtstack_dir(dirname)
 %
 % Coverts a whole directory of files in .lif format to vhlab t-stack format.
 %
+% Expects the name of the .lif files to be:
+%
+% YYYYMMDDsN.lif  where YYYY is the 4 digit year, MM is the 2 digit month, and DD is the 2 digit day. N is the slice number.
+%
+% If the .lif file is named:
+% YYYYMMDDgenotype-sN.lif
+% then the string in the position of genotype is taken to be the genotype.
+%  
+%
 
 d = dir([dirname filesep '*.lif']);
 
