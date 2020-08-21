@@ -15,6 +15,10 @@ version = readPVScanVersion(fid);
 
 [imagetimes, imagespercycle, tscycind, lscycind,meatind] = GetFrameTimes(fid,0,version);
 
+if version(1)==5 & version(2)==5,
+	meatind = 1;
+end;
+
 if length(tscycind)>0 & length(lscycind)==0,
 	% assume each cycle is the same; not necessarily true for complex records
 	params.Type = 'Time series';
@@ -25,13 +29,13 @@ else,
 end;
 
 params.Main.Total_cycles = length(imagespercycle);
-params.Main.Scanline_period__us_ = 1e6*readprairie3keyvalue(fid,'scanlinePeriod',meatind(1),500);
-params.Main.Dwell_time__us_ = readprairie3keyvalue(fid,'dwellTime',meatind(1),500);
-params.Main.Frame_period__us_ = 1e6*readprairie3keyvalue(fid,'framePeriod',meatind(1),500);
-params.Main.Lines_per_frame = readprairie3keyvalue(fid,'linesPerFrame',meatind(1),500);
-params.Main.Pixels_per_line = readprairie3keyvalue(fid,'pixelsPerLine',meatind(1),500);
-params.Main.ObjectiveLens = readprairie3keyvalue(fid,'objectiveLens',meatind(1),500);
-params.Main.ObjectiveLensMag = readprairie3keyvalue(fid,'objectiveLensMag',meatind(1),500);
+params.Main.Scanline_period__us_ = 1e6*readprairie3keyvalue(fid,'scanlinePeriod',meatind(1),500,version);
+params.Main.Dwell_time__us_ = readprairie3keyvalue(fid,'dwellTime',meatind(1),500,version);
+params.Main.Frame_period__us_ = 1e6*readprairie3keyvalue(fid,'framePeriod',meatind(1),500,version);
+params.Main.Lines_per_frame = readprairie3keyvalue(fid,'linesPerFrame',meatind(1),500,version);
+params.Main.Pixels_per_line = readprairie3keyvalue(fid,'pixelsPerLine',meatind(1),500,version);
+params.Main.ObjectiveLens = readprairie3keyvalue(fid,'objectiveLens',meatind(1),500,version);
+params.Main.ObjectiveLensMag = readprairie3keyvalue(fid,'objectiveLensMag',meatind(1),500,version);
 params.Image_TimeStamp__us_ = imagetimes;
 
 if isempty(params.Main.Dwell_time__us_),
@@ -43,13 +47,13 @@ if isempty(params.Main.Dwell_time__us_),
 		error(['Could not find parameter dwellTime in either ' filename ' or ' dotcfgfile ...
 			'; is this a new version of PV?; tell steve to upgrade.']);
 	else,
-		params.Main.Scanline_period__us_ = 1e6*readprairie3keyvalue(fid2,'scanlinePeriod',1,500);
-		params.Main.Dwell_time__us_ = readprairie3keyvalue(fid2,'dwellTime',1,500);
-		params.Main.Frame_period__us_ = 1e6*readprairie3keyvalue(fid2,'framePeriod',1,500);
-		params.Main.Lines_per_frame = readprairie3keyvalue(fid2,'linesPerFrame',1,500);
-		params.Main.Pixels_per_line = readprairie3keyvalue(fid2,'pixelsPerLine',1,500);
-		params.Main.ObjectiveLens = readprairie3keyvalue(fid2,'objectiveLens',1,500);
-		params.Main.ObjectiveLensMag = readprairie3keyvalue(fid2,'objectiveLensMag',1,500);
+		params.Main.Scanline_period__us_ = 1e6*readprairie3keyvalue(fid2,'scanlinePeriod',1,500,version);
+		params.Main.Dwell_time__us_ = readprairie3keyvalue(fid2,'dwellTime',1,500,version);
+		params.Main.Frame_period__us_ = 1e6*readprairie3keyvalue(fid2,'framePeriod',1,500,version);
+		params.Main.Lines_per_frame = readprairie3keyvalue(fid2,'linesPerFrame',1,500,version);
+		params.Main.Pixels_per_line = readprairie3keyvalue(fid2,'pixelsPerLine',1,500,version);
+		params.Main.ObjectiveLens = readprairie3keyvalue(fid2,'objectiveLens',1,500,version);
+		params.Main.ObjectiveLensMag = readprairie3keyvalue(fid2,'objectiveLensMag',1,500,version);
 		fclose(fid2);
 	end;
 end;
@@ -70,15 +74,15 @@ if length(lscycind)>0, % if we have a linescan...
     if fid1<0,
         error(['Could not locate config file:' fullfile(pathstr,[name 'Config.cfg'])]);
     else,
-        params.Main.fullImageLinesPerFrame = readprairie3keyvalue(fid1,'fullImageLinesPerFrame',0,1000);
-        params.Main.fullImagePixelsPerLine = readprairie3keyvalue(fid1,'fullImagePixelsPerLine',0,1000);
+        params.Main.fullImageLinesPerFrame = readprairie3keyvalue(fid1,'fullImageLinesPerFrame',0,1000,version);
+        params.Main.fullImagePixelsPerLine = readprairie3keyvalue(fid1,'fullImagePixelsPerLine',0,1000,version);
         fclose(fid1);
     end;
 end;
 
 fclose(fid);
 
-function str = readprairie3keyvalue(fid,keyname,pos,howmanylinestolook)
+function str = readprairie3keyvalue(fid,keyname,pos,howmanylinestolook,version)
 fseek(fid,pos,'bof');
 str = '';
 done = 0;
@@ -86,7 +90,9 @@ i = 0;
 while ~done&i<howmanylinestolook,
 	q = fgetl(fid);
 	inds = find(q~=' '); q = q(inds(1):end);
-	if any(strfind(q,['<Key key="' keyname '"'])),
+    A = any(strfind(lower(q),lower(['<Key key="' keyname '"']))); 
+    B = any(strfind(lower(q),lower(['<PVStateValue key="' keyname '"'])));
+    if A|B,
 		myind = findstr(q,'value="');
 		myq = find(q=='"');
 		myq = myq(find(myq>myind+7));
@@ -141,6 +147,8 @@ currentcycle = 0;
 cyclenum = 0;
 
 if version(1)==3 | version(1)==4,
+    tseries_str = '<Sequence type="TSeries Timed Element';
+elseif version(1)==5&version(2)==5,
     tseries_str = '<Sequence type="TSeries Timed Element';
 elseif version(1)==5,
     tseries_str = '<Sequence type="TSeries Brightness Over Time Element';
