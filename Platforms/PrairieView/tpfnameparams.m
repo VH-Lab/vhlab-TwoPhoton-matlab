@@ -27,6 +27,11 @@ if isempty(fname),
     			extension = '.TIF';
     			fname = dir([dirname filesep '*_0*1.TIF']);
     		end;
+		if isempty(fname),
+			fname = dir([dirname filesep '*_Cycle00001*Ch' int2str(channel) '*1.ome.tif']);
+			digits = 5;
+			extension='.ome.tif';
+		end;
     	end;
     end;
 end;
