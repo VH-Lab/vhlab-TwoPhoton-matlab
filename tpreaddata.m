@@ -263,4 +263,4 @@ if mode==21,
 	end;
 end;
 
-for i=1:length(ims), ims{i} = []; end; clear ims; pack;
+for i=1:length(ims), ims{i} = []; end; clear ims; 
