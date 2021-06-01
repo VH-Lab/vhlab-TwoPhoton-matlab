@@ -48,6 +48,14 @@ extensionlist = {'.tif','.TIF','.TIFF','.tiff'};
 foundit = 0;
 for i=1:length(extensionlist),
 	datafile = dir([tpdirname filesep '*' extensionlist{i} ]);
+    % ignore any hidden files
+    included = [];
+    for jj=1:numel(datafile), 
+        if datafile(jj).name(1)~='.',
+            included(end+1) = jj;
+        end;
+    end;
+    datafile = datafile(included);
 	if isempty(datafile),
 		%error(['No data file *.tif in directory ' tpdirname '.']);
 	elseif length(datafile)>1,
