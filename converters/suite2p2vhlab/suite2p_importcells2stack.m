@@ -7,7 +7,7 @@ function suite2p_importcells2stack(suite2p_Fall_file,lead_t,tpstack_file)
 %
 % SUITE2P_FALL_FILE should be the Fall.mat file name for a Suite2p plane.
 % For example: 
-%    suite2p_Fall_file = '/Volumes/van-hooser-lab/Users/Diane/For_Steve/SCN-722/t00001-001/suite2p/plane0/Fall.mat'
+%    suite2p_Fall_file = '/Volumes/van-hooser-lab/Users/Diane/For_Steve/SCN1-722/t00001-001/suite2p/plane0/Fall.mat'
 %
 % LEAD_T_DIR is the leading test directory name (if there is a set of multiple test directories merged in
 % suite2p, use the first one) (5 total digits):
@@ -35,17 +35,19 @@ end;
  % now add the cells
 
 for i=1:numel(Fall.stat),
-	celllist_here = [];
-	celllist_here.dirname = lead_t;
-	celllist_here.pixelinds = sub2ind(size(Fall.ops.meanImgE),...
-		Fall.stat{i}.xpix,Fall.stat{i}.ypix);
-	celllist_here.xi = Fall.stat{i}.xcirc;
-	celllist_here.yi = Fall.stat{i}.ycirc;
-	celllist_here.index = max_index + 1;
-	celllist_here.type = 'cell';
-	celllist_here.labels = {'GCaMP'};
-	stack_data.celllist(end+1) = celllist_here;
-	max_index = max_index + 1;
+    if Fall.iscell(i,1),
+	    celllist_here = [];
+	    celllist_here.dirname = lead_t;
+	    celllist_here.pixelinds = sub2ind(size(Fall.ops.meanImgE),...
+		    Fall.stat{i}.xpix,Fall.stat{i}.ypix);
+	    celllist_here.xi = Fall.stat{i}.xcirc;
+	    celllist_here.yi = Fall.stat{i}.ycirc;
+	    celllist_here.index = max_index + 1;
+	    celllist_here.type = 'cell';
+	    celllist_here.labels = {'GCaMP'};
+	    stack_data.celllist(end+1) = celllist_here;
+	    max_index = max_index + 1;
+    end;
 end;
 
 celllist = stack_data.celllist;

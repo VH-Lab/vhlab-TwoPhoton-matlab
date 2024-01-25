@@ -146,7 +146,7 @@ switch command,
         uicontrol(txt,'position',[340 135-2+sh 60 20],'String','Dir name:');
         uicontrol(edit,'position',[340+60 135+sh 100 20],'String','t00001','Tag','stimdirnameEdit','callback','genercallback');
         uicontrol(txt,'position',[340+60+105 135-2+sh 60 20],'String','Channel:');
-        uicontrol(edit,'position',[340+60+105+65 135+sh 50 20],'String','1','Tag','stimChannelEdit');
+        uicontrol(edit,'position',[340+60+105+65 135+sh 50 20],'String','2','Tag','stimChannelEdit');
         uicontrol(txt,'position',[340 110-2+sh 60 20],'String','Param:');
         uicontrol(edit,'position',[340+60 110+sh 100 20],'String','angle','Tag','stimparamnameEdit');
         uicontrol(txt,'position',[340 90-2+sh 60 20],'String','Trials:');
