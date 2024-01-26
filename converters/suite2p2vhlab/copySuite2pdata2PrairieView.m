@@ -40,8 +40,10 @@ for i=1:numel(prairie_target_dir_list),
 end;
 
 if sum(suite2p_frames_per_tiff) ~= numel(prairieviewfilenames),
-	error(['Number of suite2p frames ( ' int2str( suite2p_frames_per_tiff ) ') ' ...
+	if doit, 
+        error(['Number of suite2p frames ( ' int2str( suite2p_frames_per_tiff ) ') ' ...
 		'does not match PrairieView frames (' int2str(numel(prairieviewfilenames)) ').']);
+    end;
 else,
 	disp('PrairieView frame numbers match Suite2p frame numbers');
 end;

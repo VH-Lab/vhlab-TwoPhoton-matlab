@@ -75,7 +75,9 @@ for i=1:size(directory_mapping,2),
 		if isfolder(newtarget),
 			error([newtarget ' does exist. Will not overwrite.']);
 		end;
-		mkdir(newtarget)
+		if doit, 
+            mkdir(newtarget)
+        end;
 
 		disp(['      Copying from ' Sp2target ' to ' newtarget '.']);
 
@@ -90,4 +92,4 @@ for i=1:size(directory_mapping,2),
 		directory_mapping{i}{2},channel_mapping(1,1),channel_mapping(1,2),doit);
 end;
 
-
+b = 1;
