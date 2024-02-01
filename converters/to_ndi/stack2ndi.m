@@ -1,4 +1,4 @@
-function b = stack2ndi(tpstack_file, S, subjectname)
+function b = stack2ndi(tpstack_file, S)
 % STACK2NDI - export data from a vhlab-TwoPhoton-matlab to an NDI session
 %
 % B = STACK2NDI(TPSTACK_FILE, S, subjectname)
@@ -16,9 +16,13 @@ function b = stack2ndi(tpstack_file, S, subjectname)
 %
 %
 
+b = 0;
+
 [tppath,sitename,ext] = fileparts(tpstack_file);
 
 tpstack = load(tpstack_file,'-mat');
+
+p = S.getprobes('type','stimulator'); % this will create the subject document
 
 subjectname = vlt.file.textfile2char([S.path() filesep 'subject.txt']);
 s_q = ndi.query('base.name','exact_string',subjectname) & ndi.query('','isa','subject');
@@ -26,7 +30,7 @@ s_q = ndi.query('base.name','exact_string',subjectname) & ndi.query('','isa','su
 s = S.database_search(s_q);
 
 if isempty(s),
-	error(['Oh, I didn't find a subject.']);
+	error(['Oh, I didn''t find a subject.']);
 end;
 
 subdoc = s{1};
@@ -37,7 +41,6 @@ subdoc_id = subdoc.id();
 decoder = ndi.app.stimulus.decoder(S);
 rapp = ndi.app.stimulus.tuning_response(S);
 
-p = S.getprobes('type','stimulator');
 if isempty(p), error(['Could not find stimulator.']); end;
 decoder.parse_stimuli(p{1},0);
 cs_doc = rapp.label_control_stimuli(p{1},0);
@@ -68,18 +71,18 @@ cellnames = {};
 for t=1:numel(T),
 
 	% Step 1: add all new cells as ndi.elements
-if 0,
+	disp(['Working on directory ' T{t} '...']);
+
 	for i=1:numel(tpstack.celllist),
 		if strcmp(T{t},tpstack.celllist(i).dirname),
 			cellname_here = ['cell ' int2str(tpstack.celllist(i).index) ' ref ' ...
 				tpstack.celllist(i).dirname]
 			disp(['...making element...']);
 			cellnames{end+1} = cellname_here;
-			nde{end+1} = ndi.element.timeseries(S,cellname_here, 1,'roi',[],0,subdoc_id);
+			[nde{end+1}] = ndi.element.timeseries(S,cellname_here, 1,'roi',[],0,subdoc_id);
 			nde_id{end+1} = nde{end}.id();
 		end;
 	end;
-end;
 
 	%which stim_pres do we have?
 
@@ -112,3 +115,4 @@ end;
 	end;
 end;
 
+b = 1;

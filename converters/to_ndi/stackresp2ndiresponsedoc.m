@@ -5,8 +5,8 @@ function [stim_response_doc] = stackresp2ndiresponsedoc(S, tdir, resp_struct, st
 
 stim_response_doc = [];
 
-responses = vlt.data.emptystruct('stimid','response_real','response_imaginary',...
-	'control_response_real','control_response_imaginary');
+responses = struct('stimid',[], 'response_real',[], 'response_imaginary',[],...
+	'control_response_real',[],'control_response_imaginary',[]);
 
 all_stims = unique(stim_presentation.document_properties.stimulus_presentation.presentation_order);
 
@@ -16,26 +16,24 @@ blank_counter = 0;
 c_stim_id = control_stim_presentation.document_properties.control_stimulus_ids.control_stimulus_ids;
 
 for i=1:numel(stim_presentation.document_properties.stimulus_presentation.presentation_order),
-	response_here = [];
-	response_here.stimid = stim_presentation.document_properties.stimulus_presentation.presentation_order(i);
-	j = find(response_here.stimid == all_stims);
+	responses.stimid(i) = stim_presentation.document_properties.stimulus_presentation.presentation_order(i);
+	j = find(responses.stimid(i) == all_stims);
 	if j<numel(all_stims), % regular stimulus
 		stim_counters(j) = stim_counters(j)+1;
-		response_here.response_real = resp_struct.ind{j}(stim_counters(j));
-		response_here.response_imaginary = 0;
+		responses.response_real(i) = resp_struct.ind{j}(stim_counters(j));
+		responses.response_imaginary(i) = 0;
 	else,
 		blank_counter = blank_counter + 1;
-		response_here.response_real = resp_struct.blankind(blank_counter);
-		response_here.response_imaginary = 0;
+		responses.response_real(i) = resp_struct.blankind(blank_counter);
+		responses.response_imaginary(i) = 0;
 	end;
 
-	response_here.control_response_real = 0; 
-	response_here.control_response_imaginary = 0;
-	responses(end+1) = response_here;
+	responses.control_response_real(i) = 0; 
+	responses.control_response_imaginary(i) = 0;
 end;
 
 for i=1:numel(c_stim_id),
-	responses(i).control_response_real = responses(c_stim_id(i)).response_real;
+	responses.control_response_real(i) = responses.response_real(c_stim_id(i));
 end;
 
 stimulus_response_scalar.response_type = 'mean';
