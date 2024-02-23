@@ -38,8 +38,12 @@ for i=1:numel(Fall.stat),
     if Fall.iscell(i,1),
 	    celllist_here = [];
 	    celllist_here.dirname = lead_t;
+        try,
 	    celllist_here.pixelinds = sub2ind(size(Fall.ops.meanImgE),...
-		    Fall.stat{i}.xpix,Fall.stat{i}.ypix);
+		    Fall.stat{i}.ypix,Fall.stat{i}.xpix);
+        catch,
+            error(['Cell out of bounds.']);
+        end;
 	    celllist_here.xi = Fall.stat{i}.xcirc;
 	    celllist_here.yi = Fall.stat{i}.ycirc;
 	    celllist_here.index = max_index + 1;
