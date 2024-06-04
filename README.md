@@ -15,4 +15,5 @@ VH Lab tools for analysis of calcium imaging data
 6. Roy A, Wang S, Meschede-Krasa B, Breffle J, Van Hooser SD. An early phase of instructive plasticity before the typical onset of sensory experience.
 Nat Commun. 2020 Jan 2;11(1):11. doi: 10.1038/s41467-019-13872-1.
 7. Valakh V, Wise D, Zhu XA, Sha M, Fok J, Van Hooser SD, Schectman R, Cepeda I, Kirk R, O'Toole SM, Nelson SB. A transcriptional constraint mechanism limits the homeostatic response to activity deprivation in mammalian neocortex. Elife. 2023 Feb 7;12:e74899. doi: 10.7554/eLife.74899. Online ahead of print.
-
+8. Progressive Circuit Hyperexcitability in Mouse Neocortical Slice Cultures with Increasing Duration of Activity Silencing. Wise DL, Greene SB, Escobedo-Lozoya Y, Van Hooser SD, Nelson SB.
+eNeuro. 2024 May 8;11(5):ENEURO.0362-23.2024. doi: 10.1523/ENEURO.0362-23.2024. Print 2024 May.
