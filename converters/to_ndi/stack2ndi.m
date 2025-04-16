@@ -42,19 +42,23 @@ decoder = ndi.app.stimulus.decoder(S);
 rapp = ndi.app.stimulus.tuning_response(S);
 
 if isempty(p), error(['Could not find stimulator.']); end;
-decoder.parse_stimuli(p{1},0);
-cs_doc = rapp.label_control_stimuli(p{1},0);
+pres = S.database_search(ndi.query('','isa','stimulus_presentation'));
+
+if isempty(pres)
+	decoder.parse_stimuli(p{1},0);
+	cs_doc = rapp.label_control_stimuli(p{1},0);
+end
 
 stimulator_id = p{1}.id();
 
 pres = S.database_search(ndi.query('','isa','stimulus_presentation'));
-
+cs_doc = S.database_search(ndi.query('','isa','control_stimulus_ids'));
 srp = ndi.document('stimulus_response_scalar_parameters_basic') + S.newdocument();
 srp_struct = srp.document_properties.stimulus_response_scalar_parameters_basic;
 srp_struct.prestimulus_time = 5;
 srp_struct.prestimulus_normalization = 3;
 srp = ndi.document('stimulus_response_scalar_parameters_basic',...
-		'stimulus_response_scalar_parameters_basic',srp_struct) + S.newdocument();
+	'stimulus_response_scalar_parameters_basic',srp_struct) + S.newdocument();
 
 S.database_add(srp);
 
@@ -69,6 +73,10 @@ nde_id = {};
 cellnames = {};
 
 for t=1:numel(T),
+
+	if ~ismember(T{t},{tpstack.slicelist.dirname})
+		continue;
+	end
 
 	% Step 1: add all new cells as ndi.elements
 	disp(['Working on directory ' T{t} '...']);
