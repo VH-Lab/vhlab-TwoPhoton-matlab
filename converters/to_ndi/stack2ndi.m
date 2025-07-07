@@ -1,4 +1,4 @@
-function b = stack2ndi(tpstack_file, S)
+function b = stack2ndi(tpstack_file, S, options)
 % STACK2NDI - export data from a vhlab-TwoPhoton-matlab to an NDI session
 %
 % B = STACK2NDI(TPSTACK_FILE, S, subjectname)
@@ -16,6 +16,12 @@ function b = stack2ndi(tpstack_file, S)
 %
 %
 
+arguments
+    tpstack_file (1,:) char {mustBeFile}
+    S (1,1) ndi.session.dir
+    options.parseStimuli (1,1) logical = true
+end
+
 b = 0;
 
 [tppath,sitename,ext] = fileparts(tpstack_file);
@@ -23,27 +29,30 @@ b = 0;
 tpstack = load(tpstack_file,'-mat');
 
 p = S.getprobes('type','stimulator'); % this will create the subject document
+if isempty(p), error(['Could not find stimulator.']); end;
 
 subjectname = vlt.file.textfile2char([S.path() filesep 'subject.txt']);
 s_q = ndi.query('base.name','exact_string',subjectname) & ndi.query('','isa','subject');
 
 s = S.database_search(s_q);
 
-if isempty(s),
-	error(['Oh, I didn''t find a subject.']);
-end;
+if isempty(s)
+	error('Oh, I didn''t find a subject.');
+end
 
 subdoc = s{1};
 subdoc_id = subdoc.id();
 
- % get visual stimulator here
-
 decoder = ndi.app.stimulus.decoder(S);
 rapp = ndi.app.stimulus.tuning_response(S);
 
-if isempty(p), error(['Could not find stimulator.']); end;
-decoder.parse_stimuli(p{1},0);
-cs_doc = rapp.label_control_stimuli(p{1},0);
+
+if options.parseStimuli
+    decoder.parse_stimuli(p{1},0);
+    cs_doc = rapp.label_control_stimuli(p{1},0);
+else
+    cs_doc = S.database_search(ndi.query('','isa','control_stimulus_ids'));
+end
 
 stimulator_id = p{1}.id();
 
@@ -63,6 +72,8 @@ srp_id = srp.id();
 ds = dirstruct(S.path());
 
 T = getalltests(ds);
+
+T = intersect(T,{tpstack.slicelist.dirname});
 
 nde = {};
 nde_id = {};
